@@ -46,6 +46,7 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 - `PUT /api/state` replace state and persist to file
 - `GET /api/schedule` get the last generated schedule from file
 - `POST /api/schedule` generate assignments from current state and persist as the new saved schedule
+- `PUT /api/schedule/override` manually override assigned employee for a scheduled session and persist it
 - `GET /api/meta` returns the absolute data-file path
 
 ## Notes

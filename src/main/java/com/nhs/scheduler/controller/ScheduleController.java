@@ -1,5 +1,6 @@
 package com.nhs.scheduler.controller;
 
+import com.nhs.scheduler.model.AssignmentOverrideRequest;
 import com.nhs.scheduler.model.ScheduleResult;
 import com.nhs.scheduler.model.ScheduleState;
 import com.nhs.scheduler.service.ScheduleService;
@@ -42,6 +43,11 @@ public class ScheduleController {
     @PostMapping("/schedule")
     public ScheduleResult generateSchedule() {
         return scheduleService.generateSchedule();
+    }
+
+    @PutMapping("/schedule/override")
+    public ScheduleResult overrideScheduleAssignment(@Valid @RequestBody AssignmentOverrideRequest request) {
+        return scheduleService.overrideAssignedEmployee(request.getSessionId(), request.getEmployeeId());
     }
 
     @GetMapping("/meta")

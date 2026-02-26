@@ -4,98 +4,150 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NHS Cardiology Scheduler - Schedule</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f4f7f3;
-      --panel: #ffffff;
-      --ink: #13231a;
-      --accent: #00703c;
-      --accent-soft: #d7efe1;
-      --warn: #a32020;
-      --border: #c6d9cc;
-      --muted: #6f8378;
+      --md-primary: #19673b;
+      --md-primary-weak: #deeee3;
+      --md-on-primary: #ffffff;
+      --md-surface: #ffffff;
+      --md-surface-soft: #f7faf8;
+      --md-bg: #eef2ef;
+      --md-on-surface: #1a201c;
+      --md-on-surface-muted: #5f675f;
+      --md-outline: #c6cec8;
+      --md-error: #b3261e;
+      --md-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.12);
+      --md-shadow-2: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Gill Sans", "Trebuchet MS", sans-serif;
-      background: radial-gradient(circle at top right, #e4f3e9, var(--bg));
-      color: var(--ink);
+      font-family: "Roboto", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 100% -10%, #dbece1 0%, transparent 35%),
+        radial-gradient(circle at -10% 110%, #dfe8ff 0%, transparent 40%),
+        var(--md-bg);
+      color: var(--md-on-surface);
     }
-    .wrap { max-width: 1300px; margin: 0 auto; padding: 24px 16px 40px; }
-    h1 { margin: 0 0 6px; font-size: 2rem; letter-spacing: 0.02em; }
-    .subtitle { margin-bottom: 10px; color: #32483a; }
+    .app-shell { min-height: 100vh; }
+    .wrap { max-width: 1380px; margin: 0 auto; padding: 20px 16px 36px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--md-outline);
+      background: color-mix(in srgb, var(--md-surface) 88%, transparent);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--md-shadow-1);
+    }
+    .topbar-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: 0.01em;
+      font-weight: 700;
+    }
+    .subtitle { margin: 0; color: var(--md-on-surface-muted); font-size: 0.95rem; }
     .nav {
       display: flex;
-      gap: 10px;
-      margin: 0 0 16px;
+      gap: 8px;
+      margin: 0;
     }
     .nav a {
       text-decoration: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: var(--ink);
-      background: #f8fcf9;
-      font-weight: 600;
+      border: 1px solid var(--md-outline);
+      border-radius: 999px;
+      padding: 7px 14px;
+      color: var(--md-on-surface);
+      background: var(--md-surface);
+      font-weight: 500;
+      transition: background 120ms ease, border-color 120ms ease;
     }
-    .nav a.active { background: var(--accent-soft); }
+    .nav a:hover { background: var(--md-surface-soft); }
+    .nav a.active {
+      border-color: transparent;
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+      box-shadow: var(--md-shadow-1);
+    }
     .file-path {
       margin: 0 0 16px;
-      padding: 8px 10px;
-      background: var(--accent-soft);
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--md-surface);
+      border: 1px solid var(--md-outline);
+      border-radius: 12px;
       font-size: 0.9rem;
       word-break: break-all;
+      box-shadow: var(--md-shadow-1);
     }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
     button {
       border: 0;
-      border-radius: 8px;
-      padding: 10px 14px;
+      border-radius: 999px;
+      padding: 10px 16px;
       cursor: pointer;
-      font-weight: 600;
-      color: white;
-      background: var(--accent);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--md-on-primary);
+      background: var(--md-primary);
+      box-shadow: var(--md-shadow-1);
+      transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
     }
-    button.secondary { background: #3f5f50; }
+    button:hover { filter: brightness(1.04); box-shadow: var(--md-shadow-2); }
+    button:active { transform: translateY(1px); }
+    button.secondary {
+      background: color-mix(in srgb, var(--md-primary) 16%, var(--md-surface));
+      color: var(--md-primary);
+      border: 1px solid color-mix(in srgb, var(--md-primary) 30%, transparent);
+    }
     .message {
       margin-top: 12px;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 12px;
       border: 1px solid transparent;
       display: none;
+      box-shadow: var(--md-shadow-1);
     }
-    .message.ok { background: var(--accent-soft); border-color: var(--border); }
-    .message.error { background: #f8dede; border-color: #e7bbbb; color: var(--warn); }
+    .message.ok { background: var(--md-primary-weak); border-color: color-mix(in srgb, var(--md-primary) 35%, transparent); }
+    .message.error { background: #fde9e8; border-color: #f3beb9; color: var(--md-error); }
     .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
+      background: var(--md-surface);
+      border: 1px solid var(--md-outline);
+      border-radius: 16px;
+      padding: 14px;
       margin-top: 14px;
+      box-shadow: var(--md-shadow-2);
     }
-    .panel h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    .panel h2 { margin: 0 0 10px; font-size: 1.1rem; font-weight: 600; }
     .calendar-wrap {
       overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--md-outline);
     }
     .timetable {
       width: 100%;
       min-width: 1300px;
       border-collapse: collapse;
-      border: 1px solid var(--border);
-      background: #fcfffd;
+      background: #fcfefd;
     }
     .timetable th,
     .timetable td {
-      border: 1px solid var(--border);
+      border: 1px solid var(--md-outline);
       padding: 8px;
       vertical-align: top;
     }
     .timetable thead th {
-      background: #eff8f2;
-      font-weight: 700;
+      background: #edf4f0;
+      font-weight: 600;
       text-align: center;
     }
     .room-header {
@@ -104,10 +156,10 @@
       position: sticky;
       left: 0;
       z-index: 1;
-      background: #eff8f2;
+      background: #edf4f0;
     }
     .room-cell {
-      background: #f4faf6;
+      background: #f2f7f3;
       font-weight: 600;
       position: sticky;
       left: 0;
@@ -118,24 +170,96 @@
       min-height: 74px;
     }
     .assignment-card {
-      border: 1px solid #b8d2c2;
-      border-left: 4px solid var(--accent);
-      border-radius: 7px;
-      padding: 6px;
-      background: #f8fdf9;
+      border: 1px solid #c3d2c8;
+      border-left: 4px solid var(--md-primary);
+      border-radius: 10px;
+      padding: 8px;
+      background: #f8fcf9;
       font-size: 0.84rem;
+      box-shadow: var(--md-shadow-1);
     }
     .assignment-staff {
-      color: #355344;
+      color: var(--md-on-surface-muted);
       margin-top: 2px;
     }
+    .assignment-override {
+      margin-top: 6px;
+    }
+    .assignment-override button {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      line-height: 1.1;
+    }
     .empty-slot {
-      color: var(--muted);
+      color: var(--md-on-surface-muted);
       font-size: 0.82rem;
       font-style: italic;
     }
     .unscheduled-list { margin: 10px 0 0; padding-left: 18px; }
-    .unscheduled-list li { margin-bottom: 4px; color: var(--warn); }
+    .unscheduled-list li { margin-bottom: 4px; color: var(--md-error); }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(19, 28, 22, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 40;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: min(560px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      background: var(--md-surface);
+      border: 1px solid var(--md-outline);
+      border-radius: 16px;
+      box-shadow: var(--md-shadow-2);
+      padding: 16px;
+    }
+    .modal h3 {
+      margin: 0 0 4px;
+      font-size: 1.1rem;
+    }
+    .modal-subtitle {
+      margin: 0 0 12px;
+      color: var(--md-on-surface-muted);
+      font-size: 0.9rem;
+    }
+    .candidate-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .candidate-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      border: 1px solid var(--md-outline);
+      border-radius: 10px;
+      padding: 10px;
+      background: #f9fbf9;
+    }
+    .candidate-item input {
+      margin-top: 2px;
+    }
+    .candidate-name { font-weight: 600; }
+    .candidate-meta { color: var(--md-on-surface-muted); font-size: 0.84rem; margin-top: 2px; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .empty-candidates {
+      border: 1px dashed var(--md-outline);
+      border-radius: 10px;
+      padding: 10px;
+      color: var(--md-on-surface-muted);
+      font-style: italic;
+      margin-bottom: 12px;
+    }
     pre {
       margin: 0;
       white-space: pre-wrap;
@@ -143,36 +267,61 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 0.9rem;
     }
+    @media (max-width: 720px) {
+      .wrap { padding: 14px 10px 24px; }
+      .topbar-inner { padding: 10px; }
+      h1 { font-size: 1.2rem; }
+      .subtitle { font-size: 0.86rem; }
+      .panel { border-radius: 12px; padding: 10px; }
+      .actions { gap: 8px; }
+      button { padding: 9px 14px; }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>NHS Cardiology Scheduler</h1>
-  <p class="subtitle">Schedule view. Configure rooms, employees, and sessions on the separate config page.</p>
-
-  <div class="nav">
-    <a href="/" class="active">Schedule</a>
-    <a href="/config.html">Configure Data</a>
-  </div>
-
-  <div id="filePath" class="file-path">Data file: loading...</div>
-
-  <div class="actions">
-    <button id="generateBtn">Generate Weekly Schedule</button>
-    <button id="reloadBtn" class="secondary">Reload From Saved Data</button>
-  </div>
-
-  <div id="message" class="message"><pre id="messageText"></pre></div>
-
-  <div class="panel">
-    <h2>Weekly Calendar</h2>
-    <div class="calendar-wrap">
-      <table id="calendarTable" class="timetable"></table>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <h1>NHS Cardiology Scheduler</h1>
+      <p class="subtitle">Schedule view. Configure rooms, employees, and sessions on the separate config page.</p>
+      <div class="nav">
+        <a href="/" class="active">Schedule</a>
+        <a href="/config.html">Configure Data</a>
+      </div>
     </div>
-    <h2 style="margin-top: 14px;">Unscheduled Sessions</h2>
-    <ul id="unscheduledOutput" class="unscheduled-list"></ul>
+  </div>
+  <div class="wrap">
+    <div id="filePath" class="file-path">Data file: loading...</div>
+
+    <div class="actions">
+      <button id="generateBtn">Generate Weekly Schedule</button>
+      <button id="reloadBtn" class="secondary">Reload From Saved Data</button>
+    </div>
+
+    <div id="message" class="message"><pre id="messageText"></pre></div>
+
+    <div class="panel">
+      <h2>Weekly Calendar</h2>
+      <div class="calendar-wrap">
+        <table id="calendarTable" class="timetable"></table>
+      </div>
+      <h2 style="margin-top: 14px;">Unscheduled Sessions</h2>
+      <ul id="unscheduledOutput" class="unscheduled-list"></ul>
+    </div>
   </div>
 
+  <div id="overrideModalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h3>Override Assigned Employee</h3>
+      <p id="overrideModalSubtitle" class="modal-subtitle"></p>
+      <div id="overrideCandidateList" class="candidate-list"></div>
+      <div id="overrideEmptyState" class="empty-candidates" style="display:none;">No valid employees available for this session.</div>
+      <div class="modal-actions">
+        <button id="overrideCancelBtn" type="button" class="secondary">Cancel</button>
+        <button id="overrideApplyBtn" type="button">Apply Override</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -182,7 +331,14 @@
   const messageText = document.getElementById('messageText');
   const calendarTable = document.getElementById('calendarTable');
   const unscheduledOutput = document.getElementById('unscheduledOutput');
+  const overrideModalBackdrop = document.getElementById('overrideModalBackdrop');
+  const overrideModalSubtitle = document.getElementById('overrideModalSubtitle');
+  const overrideCandidateList = document.getElementById('overrideCandidateList');
+  const overrideEmptyState = document.getElementById('overrideEmptyState');
   let rooms = [];
+  let employees = [];
+  let currentSchedule = { assignments: [], unscheduledSessions: [] };
+  let activeOverrideAssignment = null;
 
   function showMessage(text, ok) {
     message.style.display = 'block';
@@ -195,7 +351,89 @@
     return value < '12:00' ? 'AM' : 'PM';
   }
 
+  function isAvailable(employee, session) {
+    return (employee.availability || []).some((window) => (
+      window.dayOfWeek === session.dayOfWeek
+      && window.start <= session.start
+      && window.end >= session.end
+    ));
+  }
+
+  function overlaps(aStart, aEnd, bStart, bEnd) {
+    return aStart < bEnd && bStart < aEnd;
+  }
+
+  function hasConflict(employeeId, targetSession, targetSessionId) {
+    const assignments = currentSchedule.assignments || [];
+    return assignments
+      .filter((assignment) => assignment?.employee?.id === employeeId)
+      .filter((assignment) => assignment?.session?.id !== targetSessionId)
+      .filter((assignment) => assignment?.session?.dayOfWeek === targetSession.dayOfWeek)
+      .some((assignment) => overlaps(
+        assignment.session.start,
+        assignment.session.end,
+        targetSession.start,
+        targetSession.end
+      ));
+  }
+
+  function findEligibleEmployees(assignment) {
+    const session = assignment.session;
+    const requiredSkill = (session.requiredSkill || '').toLowerCase();
+    return (employees || []).filter((employee) => {
+      const skillMatch = (employee.skills || []).some((skill) => (skill || '').toLowerCase() === requiredSkill);
+      return skillMatch
+        && isAvailable(employee, session)
+        && !hasConflict(employee.id, session, session.id);
+    });
+  }
+
+  function closeOverrideModal() {
+    overrideModalBackdrop.classList.remove('open');
+    activeOverrideAssignment = null;
+    overrideCandidateList.innerHTML = '';
+    overrideEmptyState.style.display = 'none';
+  }
+
+  function openOverrideModal(assignment) {
+    activeOverrideAssignment = assignment;
+    const eligibleEmployees = findEligibleEmployees(assignment);
+    overrideModalSubtitle.textContent = `${assignment.session.name} (${assignment.session.dayOfWeek} ${assignment.session.start.slice(0, 5)}-${assignment.session.end.slice(0, 5)})`;
+    overrideCandidateList.innerHTML = '';
+
+    if (eligibleEmployees.length === 0) {
+      overrideEmptyState.style.display = 'block';
+    } else {
+      overrideEmptyState.style.display = 'none';
+      eligibleEmployees.forEach((employee, idx) => {
+        const wrapper = document.createElement('label');
+        wrapper.className = 'candidate-item';
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'override-employee';
+        radio.value = employee.id;
+        if (employee.id === assignment.employee.id || (idx === 0 && !eligibleEmployees.some((e) => e.id === assignment.employee.id))) {
+          radio.checked = true;
+        }
+        const detail = document.createElement('div');
+        const name = document.createElement('div');
+        name.className = 'candidate-name';
+        name.textContent = employee.name;
+        const meta = document.createElement('div');
+        meta.className = 'candidate-meta';
+        meta.textContent = `${employee.id} • skills: ${(employee.skills || []).join(', ')}`;
+        detail.appendChild(name);
+        detail.appendChild(meta);
+        wrapper.appendChild(radio);
+        wrapper.appendChild(detail);
+        overrideCandidateList.appendChild(wrapper);
+      });
+    }
+    overrideModalBackdrop.classList.add('open');
+  }
+
   function buildCalendar(result) {
+    currentSchedule = result || { assignments: [], unscheduledSessions: [] };
     calendarTable.innerHTML = '';
     unscheduledOutput.innerHTML = '';
 
@@ -261,8 +499,17 @@
               const staff = document.createElement('div');
               staff.className = 'assignment-staff';
               staff.textContent = assignment.employee.name;
+              const override = document.createElement('div');
+              override.className = 'assignment-override';
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'secondary';
+              button.textContent = 'Override';
+              button.addEventListener('click', () => openOverrideModal(assignment));
               card.appendChild(session);
               card.appendChild(staff);
+              override.appendChild(button);
+              card.appendChild(override);
               cell.appendChild(card);
             });
           }
@@ -301,6 +548,27 @@
       throw new Error(data.error || 'Failed to load rooms');
     }
     rooms = data.rooms || [];
+    employees = data.employees || [];
+  }
+
+  async function overrideAssignment(sessionId, employeeId) {
+    try {
+      const res = await fetch('/api/schedule/override', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, employeeId })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to override employee assignment', false);
+        return;
+      }
+      await loadRooms();
+      buildCalendar(data);
+      showMessage('Employee override saved.', true);
+    } catch (e) {
+      showMessage(e.message, false);
+    }
   }
 
   async function loadSchedule() {
@@ -337,6 +605,20 @@
 
   document.getElementById('generateBtn').addEventListener('click', generateSchedule);
   document.getElementById('reloadBtn').addEventListener('click', loadSchedule);
+  document.getElementById('overrideCancelBtn').addEventListener('click', closeOverrideModal);
+  document.getElementById('overrideApplyBtn').addEventListener('click', async () => {
+    if (!activeOverrideAssignment) return;
+    const selected = overrideCandidateList.querySelector('input[name="override-employee"]:checked');
+    if (!selected) {
+      showMessage('Select an employee to apply override.', false);
+      return;
+    }
+    await overrideAssignment(activeOverrideAssignment.session.id, selected.value);
+    closeOverrideModal();
+  });
+  overrideModalBackdrop.addEventListener('click', (e) => {
+    if (e.target === overrideModalBackdrop) closeOverrideModal();
+  });
 
   (async () => {
     await loadMeta();

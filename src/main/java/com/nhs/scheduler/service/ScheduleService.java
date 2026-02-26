@@ -102,6 +102,63 @@ public class ScheduleService {
         return result;
     }
 
+    public ScheduleResult overrideAssignedEmployee(String sessionId, String employeeId) {
+        if (isBlank(sessionId) || isBlank(employeeId)) {
+            throw new IllegalArgumentException("sessionId and employeeId are required");
+        }
+
+        ScheduleState state = getState();
+        validateState(state);
+
+        ScheduleResult schedule = state.getSchedule();
+        if (schedule == null) {
+            throw new IllegalArgumentException("No saved schedule exists to override");
+        }
+
+        Assignment target = schedule.getAssignments().stream()
+                .filter(assignment -> assignment.getSession() != null)
+                .filter(assignment -> sessionId.equals(assignment.getSession().getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No scheduled assignment found for session " + sessionId));
+
+        Employee replacement = state.getEmployees().stream()
+                .filter(employee -> employeeId.equals(employee.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found: " + employeeId));
+
+        Session targetSession = target.getSession();
+        boolean hasSkill = replacement.getSkills().stream()
+                .anyMatch(skill -> skill.equalsIgnoreCase(targetSession.getRequiredSkill()));
+        if (!hasSkill) {
+            throw new IllegalArgumentException("Employee " + employeeId + " does not have required skill " + targetSession.getRequiredSkill());
+        }
+
+        if (!isAvailable(replacement, targetSession)) {
+            throw new IllegalArgumentException("Employee " + employeeId + " is not available for this session");
+        }
+
+        boolean hasConflict = schedule.getAssignments().stream()
+                .filter(assignment -> assignment.getSession() != null && assignment.getEmployee() != null)
+                .filter(assignment -> !assignment.getSession().getId().equals(targetSession.getId()))
+                .filter(assignment -> employeeId.equals(assignment.getEmployee().getId()))
+                .filter(assignment -> assignment.getSession().getDayOfWeek() == targetSession.getDayOfWeek())
+                .anyMatch(assignment -> overlaps(
+                        assignment.getSession().getStart(),
+                        assignment.getSession().getEnd(),
+                        targetSession.getStart(),
+                        targetSession.getEnd()
+                ));
+
+        if (hasConflict) {
+            throw new IllegalArgumentException("Employee " + employeeId + " already has a conflicting session assignment");
+        }
+
+        target.setEmployee(replacement);
+        state.setSchedule(schedule);
+        fileStateStore.write(state);
+        return schedule;
+    }
+
     public String getDataFilePath() {
         return fileStateStore.getFilePath();
     }
