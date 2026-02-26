@@ -77,41 +77,62 @@
       margin-top: 14px;
     }
     .panel h2 { margin: 0 0 8px; font-size: 1.1rem; }
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(160px, 1fr));
-      gap: 10px;
+    .calendar-wrap {
       overflow-x: auto;
-      padding-bottom: 6px;
     }
-    .day-column {
+    .timetable {
+      width: 100%;
+      min-width: 1300px;
+      border-collapse: collapse;
       border: 1px solid var(--border);
-      border-radius: 8px;
       background: #fcfffd;
-      min-height: 180px;
     }
-    .day-header {
-      padding: 8px 10px;
-      border-bottom: 1px solid var(--border);
+    .timetable th,
+    .timetable td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      vertical-align: top;
+    }
+    .timetable thead th {
+      background: #eff8f2;
       font-weight: 700;
+      text-align: center;
+    }
+    .room-header {
+      text-align: left !important;
+      min-width: 180px;
+      position: sticky;
+      left: 0;
+      z-index: 1;
       background: #eff8f2;
     }
-    .day-body { padding: 8px; display: grid; gap: 8px; }
-    .event-card {
+    .room-cell {
+      background: #f4faf6;
+      font-weight: 600;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+    .slot-cell {
+      min-width: 120px;
+      min-height: 74px;
+    }
+    .assignment-card {
       border: 1px solid #b8d2c2;
       border-left: 4px solid var(--accent);
       border-radius: 7px;
-      padding: 8px;
+      padding: 6px;
       background: #f8fdf9;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
     }
-    .event-time { font-weight: 700; }
-    .event-meta { color: #355344; margin-top: 3px; }
-    .empty-day {
+    .assignment-staff {
+      color: #355344;
+      margin-top: 2px;
+    }
+    .empty-slot {
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       font-style: italic;
-      padding: 4px;
     }
     .unscheduled-list { margin: 10px 0 0; padding-left: 18px; }
     .unscheduled-list li { margin-bottom: 4px; color: var(--warn); }
@@ -145,27 +166,23 @@
 
   <div class="panel">
     <h2>Weekly Calendar</h2>
-    <div id="calendarGrid" class="calendar-grid"></div>
+    <div class="calendar-wrap">
+      <table id="calendarTable" class="timetable"></table>
+    </div>
     <h2 style="margin-top: 14px;">Unscheduled Sessions</h2>
     <ul id="unscheduledOutput" class="unscheduled-list"></ul>
   </div>
 
-  <div class="panel">
-    <h2>Raw Schedule Result (JSON)</h2>
-    <pre id="resultOutput">No schedule generated yet.</pre>
-  </div>
 </div>
 
 <script>
   const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-  const resultOutput = document.getElementById('resultOutput');
   const filePath = document.getElementById('filePath');
   const message = document.getElementById('message');
   const messageText = document.getElementById('messageText');
-  const calendarGrid = document.getElementById('calendarGrid');
+  const calendarTable = document.getElementById('calendarTable');
   const unscheduledOutput = document.getElementById('unscheduledOutput');
-
-  const pretty = (obj) => JSON.stringify(obj, null, 2);
+  let rooms = [];
 
   function showMessage(text, ok) {
     message.style.display = 'block';
@@ -173,73 +190,88 @@
     messageText.textContent = text;
   }
 
-  function formatTime(timeValue) {
-    return (timeValue || '').slice(0, 5);
+  function getHalfDaySlot(startTime) {
+    const value = (startTime || '').slice(0, 5);
+    return value < '12:00' ? 'AM' : 'PM';
   }
 
   function buildCalendar(result) {
-    calendarGrid.innerHTML = '';
+    calendarTable.innerHTML = '';
     unscheduledOutput.innerHTML = '';
 
     const assignments = (result && result.assignments) ? result.assignments : [];
-    const byDay = new Map(DAY_ORDER.map(day => [day, []]));
-
+    const assignmentMap = new Map();
     assignments.forEach((assignment) => {
-      const day = assignment.session.dayOfWeek;
-      if (byDay.has(day)) byDay.get(day).push(assignment);
+      const key = `${assignment.room.id}|${assignment.session.dayOfWeek}|${getHalfDaySlot(assignment.session.start)}`;
+      if (!assignmentMap.has(key)) assignmentMap.set(key, []);
+      assignmentMap.get(key).push(assignment);
     });
 
+    const thead = document.createElement('thead');
+    const dayHeaderRow = document.createElement('tr');
+    const roomHeader = document.createElement('th');
+    roomHeader.textContent = 'Room';
+    roomHeader.className = 'room-header';
+    roomHeader.rowSpan = 2;
+    dayHeaderRow.appendChild(roomHeader);
     DAY_ORDER.forEach((day) => {
-      const dayAssignments = byDay.get(day) || [];
-      dayAssignments.sort((a, b) => a.session.start.localeCompare(b.session.start));
-
-      const column = document.createElement('div');
-      column.className = 'day-column';
-
-      const header = document.createElement('div');
-      header.className = 'day-header';
-      header.textContent = day;
-      column.appendChild(header);
-
-      const body = document.createElement('div');
-      body.className = 'day-body';
-
-      if (dayAssignments.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'empty-day';
-        empty.textContent = 'No assignments';
-        body.appendChild(empty);
-      } else {
-        dayAssignments.forEach((assignment) => {
-          const card = document.createElement('div');
-          card.className = 'event-card';
-
-          const time = document.createElement('div');
-          time.className = 'event-time';
-          time.textContent = `${formatTime(assignment.session.start)} - ${formatTime(assignment.session.end)}`;
-          card.appendChild(time);
-
-          const title = document.createElement('div');
-          title.textContent = assignment.session.name;
-          card.appendChild(title);
-
-          const meta1 = document.createElement('div');
-          meta1.className = 'event-meta';
-          meta1.textContent = `Room: ${assignment.room.name}`;
-          card.appendChild(meta1);
-
-          const meta2 = document.createElement('div');
-          meta2.className = 'event-meta';
-          meta2.textContent = `Staff: ${assignment.employee.name}`;
-          card.appendChild(meta2);
-
-          body.appendChild(card);
-        });
-      }
-
-      column.appendChild(body);
-      calendarGrid.appendChild(column);
+      const th = document.createElement('th');
+      th.colSpan = 2;
+      th.textContent = day;
+      dayHeaderRow.appendChild(th);
     });
+    const slotHeaderRow = document.createElement('tr');
+    DAY_ORDER.forEach(() => {
+      const am = document.createElement('th');
+      am.textContent = 'AM';
+      const pm = document.createElement('th');
+      pm.textContent = 'PM';
+      slotHeaderRow.appendChild(am);
+      slotHeaderRow.appendChild(pm);
+    });
+    thead.appendChild(dayHeaderRow);
+    thead.appendChild(slotHeaderRow);
+    calendarTable.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    rooms.forEach((room) => {
+      const tr = document.createElement('tr');
+      const roomCell = document.createElement('td');
+      roomCell.className = 'room-cell';
+      roomCell.textContent = room.name || room.id;
+      tr.appendChild(roomCell);
+
+      DAY_ORDER.forEach((day) => {
+        ['AM', 'PM'].forEach((slot) => {
+          const cell = document.createElement('td');
+          cell.className = 'slot-cell';
+          const key = `${room.id}|${day}|${slot}`;
+          const slotAssignments = assignmentMap.get(key) || [];
+          if (slotAssignments.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-slot';
+            empty.textContent = 'No session';
+            cell.appendChild(empty);
+          } else {
+            slotAssignments.forEach((assignment) => {
+              const card = document.createElement('div');
+              card.className = 'assignment-card';
+              const session = document.createElement('div');
+              session.textContent = assignment.session.name;
+              const staff = document.createElement('div');
+              staff.className = 'assignment-staff';
+              staff.textContent = assignment.employee.name;
+              card.appendChild(session);
+              card.appendChild(staff);
+              cell.appendChild(card);
+            });
+          }
+          tr.appendChild(cell);
+        });
+      });
+      tbody.appendChild(tr);
+    });
+    calendarTable.appendChild(tbody);
 
     const unscheduled = result?.unscheduledSessions || [];
     if (unscheduled.length === 0) {
@@ -262,6 +294,31 @@
     filePath.textContent = `Data file: ${meta.dataFile}`;
   }
 
+  async function loadRooms() {
+    const res = await fetch('/api/state');
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to load rooms');
+    }
+    rooms = data.rooms || [];
+  }
+
+  async function loadSchedule() {
+    try {
+      const res = await fetch('/api/schedule');
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to load schedule', false);
+        return;
+      }
+      await loadRooms();
+      buildCalendar(data);
+      showMessage('Loaded saved schedule.', true);
+    } catch (e) {
+      showMessage(e.message, false);
+    }
+  }
+
   async function generateSchedule() {
     try {
       const res = await fetch('/api/schedule', { method: 'POST' });
@@ -270,7 +327,7 @@
         showMessage(data.error || 'Failed to generate schedule', false);
         return;
       }
-      resultOutput.textContent = pretty(data);
+      await loadRooms();
       buildCalendar(data);
       showMessage('Schedule generated.', true);
     } catch (e) {
@@ -279,12 +336,13 @@
   }
 
   document.getElementById('generateBtn').addEventListener('click', generateSchedule);
-  document.getElementById('reloadBtn').addEventListener('click', generateSchedule);
+  document.getElementById('reloadBtn').addEventListener('click', loadSchedule);
 
   (async () => {
     await loadMeta();
+    await loadRooms();
     buildCalendar({ assignments: [], unscheduledSessions: [] });
-    await generateSchedule();
+    await loadSchedule();
   })();
 </script>
 </body>

@@ -18,6 +18,9 @@ public class ScheduleState {
     @JsonProperty("sessions")
     @JsonAlias("jobs")
     private List<Session> sessions = new ArrayList<>();
+    private List<String> purposeOptions = new ArrayList<>();
+    private List<String> skillOptions = new ArrayList<>();
+    private ScheduleResult schedule;
 
     public List<Room> getRooms() {
         return rooms;
@@ -41,5 +44,29 @@ public class ScheduleState {
 
     public void setSessions(List<Session> sessions) {
         this.sessions = sessions;
+    }
+
+    public List<String> getPurposeOptions() {
+        return purposeOptions;
+    }
+
+    public void setPurposeOptions(List<String> purposeOptions) {
+        this.purposeOptions = purposeOptions;
+    }
+
+    public List<String> getSkillOptions() {
+        return skillOptions;
+    }
+
+    public void setSkillOptions(List<String> skillOptions) {
+        this.skillOptions = skillOptions;
+    }
+
+    public ScheduleResult getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(ScheduleResult schedule) {
+        this.schedule = schedule;
     }
 }

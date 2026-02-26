@@ -34,6 +34,11 @@ public class ScheduleController {
         return scheduleService.replaceState(state);
     }
 
+    @GetMapping("/schedule")
+    public ScheduleResult getSchedule() {
+        return scheduleService.getSchedule();
+    }
+
     @PostMapping("/schedule")
     public ScheduleResult generateSchedule() {
         return scheduleService.generateSchedule();

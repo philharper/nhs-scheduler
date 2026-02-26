@@ -35,6 +35,8 @@ A scheduling app for NHS cardiology diagnostic departments.
 - `employees[]`: `{ id, name, skills[], availability[] }`
 - `availability[]`: `{ dayOfWeek, start, end }`
 - `sessions[]`: `{ id, name, requiredSkill, purpose, dayOfWeek, start, end }`
+- `purposeOptions[]`: configurable purpose values used by room purpose checkboxes
+- `skillOptions[]`: configurable skill values used by employee skill checkboxes
 
 Example values for `dayOfWeek`: `MONDAY`, `TUESDAY`, ...
 Times use `HH:mm:ss` (for example `08:00:00`).
@@ -42,7 +44,8 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 ## API
 - `GET /api/state` get current state from file
 - `PUT /api/state` replace state and persist to file
-- `POST /api/schedule` generate assignments from current state
+- `GET /api/schedule` get the last generated schedule from file
+- `POST /api/schedule` generate assignments from current state and persist as the new saved schedule
 - `GET /api/meta` returns the absolute data-file path
 
 ## Notes

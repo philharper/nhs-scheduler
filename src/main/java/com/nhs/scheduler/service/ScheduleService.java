@@ -36,8 +36,17 @@ public class ScheduleService {
 
     public ScheduleState replaceState(ScheduleState state) {
         validateState(state);
+        ScheduleState existing = getState();
+        if (state.getSchedule() == null) {
+            state.setSchedule(existing.getSchedule());
+        }
         fileStateStore.write(state);
         return state;
+    }
+
+    public ScheduleResult getSchedule() {
+        ScheduleState state = getState();
+        return state.getSchedule() == null ? new ScheduleResult() : state.getSchedule();
     }
 
     public ScheduleResult generateSchedule() {
@@ -86,6 +95,9 @@ public class ScheduleService {
             roomSessions.add(session);
             result.getAssignments().add(new Assignment(session, selected, selectedRoom));
         }
+
+        state.setSchedule(result);
+        fileStateStore.write(state);
 
         return result;
     }

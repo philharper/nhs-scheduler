@@ -94,6 +94,38 @@
       align-items: center;
     }
     .tiny { font-size: 0.85rem; color: var(--muted); }
+    .options-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .option-config-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .option-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #f8fcf9;
+    }
+    .option-grid {
+      display: grid;
+      gap: 6px;
+    }
+    .option-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .option-check input {
+      width: auto;
+    }
   </style>
 </head>
 <body>
@@ -115,12 +147,26 @@
   <div id="message" class="message"></div>
 
   <div class="panel">
+    <h2>Configurable Purpose and Skill Values</h2>
+    <div class="options-row">
+      <input id="newPurposeInput" placeholder="Add room/session purpose (e.g. ecg)" />
+      <button id="addPurposeBtn" type="button">Add Purpose</button>
+    </div>
+    <div id="purposeOptionsList" class="option-config-list"></div>
+    <div class="options-row" style="margin-top: 12px;">
+      <input id="newSkillInput" placeholder="Add employee/session skill (e.g. holter)" />
+      <button id="addSkillBtn" type="button">Add Skill</button>
+    </div>
+    <div id="skillOptionsList" class="option-config-list"></div>
+  </div>
+
+  <div class="panel">
     <h2>Rooms</h2>
     <div class="actions"><button id="addRoomBtn" type="button">Add Room</button></div>
     <div class="table-wrap">
       <table>
         <thead>
-        <tr><th>ID</th><th>Name</th><th>Purpose</th><th>Action</th></tr>
+        <tr><th>ID</th><th>Name</th><th>Purpose (single choice)</th><th>Action</th></tr>
         </thead>
         <tbody id="roomsBody"></tbody>
       </table>
@@ -133,7 +179,7 @@
     <div class="table-wrap">
       <table>
         <thead>
-        <tr><th>ID</th><th>Name</th><th>Skills (comma-separated)</th><th>Availability</th><th>Action</th></tr>
+        <tr><th>ID</th><th>Name</th><th>Skills (checkboxes)</th><th>Availability</th><th>Action</th></tr>
         </thead>
         <tbody id="employeesBody"></tbody>
       </table>
@@ -160,14 +206,18 @@
 
 <script>
   const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+  const DEFAULT_PURPOSE_OPTIONS = ['ecg', 'echo', 'stress-test', 'holter', 'cardiac-bloods', 'diagnostic-consult'];
+  const DEFAULT_SKILL_OPTIONS = ['ecg', 'echo', 'stress-test', 'holter', 'cardiac-bloods', 'diagnostic-consult'];
 
-  let state = { rooms: [], employees: [], sessions: [] };
+  let state = { rooms: [], employees: [], sessions: [], purposeOptions: [], skillOptions: [] };
 
   const roomsBody = document.getElementById('roomsBody');
   const employeesBody = document.getElementById('employeesBody');
   const sessionsBody = document.getElementById('sessionsBody');
   const message = document.getElementById('message');
   const filePath = document.getElementById('filePath');
+  const purposeOptionsList = document.getElementById('purposeOptionsList');
+  const skillOptionsList = document.getElementById('skillOptionsList');
 
   const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -198,6 +248,56 @@
     return select;
   }
 
+  function unique(values) {
+    return Array.from(new Set((values || []).map(v => (v || '').trim()).filter(Boolean)));
+  }
+
+  function purposeCheckboxes(room) {
+    if (!state.purposeOptions.length) return '<div class="tiny">Add at least one purpose above.</div>';
+    return `<div class="option-grid">
+      ${state.purposeOptions.map((purpose) => `
+        <label class="option-check">
+          <input type="checkbox" data-field="room-purpose" value="${purpose}" ${room.purpose === purpose ? 'checked' : ''} />
+          <span>${purpose}</span>
+        </label>
+      `).join('')}
+    </div>`;
+  }
+
+  function skillCheckboxes(employee) {
+    if (!state.skillOptions.length) return '<div class="tiny">Add at least one skill above.</div>';
+    return `<div class="option-grid">
+      ${state.skillOptions.map((skill) => `
+        <label class="option-check">
+          <input type="checkbox" data-field="employee-skill" value="${skill}" ${(employee.skills || []).includes(skill) ? 'checked' : ''} />
+          <span>${skill}</span>
+        </label>
+      `).join('')}
+    </div>`;
+  }
+
+  function renderOptionConfig() {
+    purposeOptionsList.innerHTML = state.purposeOptions.map((purpose) => `
+      <span class="option-chip">
+        <span>${purpose}</span>
+        <button type="button" class="danger" data-action="remove-purpose-option" data-value="${purpose}">X</button>
+      </span>
+    `).join('');
+    skillOptionsList.innerHTML = state.skillOptions.map((skill) => `
+      <span class="option-chip">
+        <span>${skill}</span>
+        <button type="button" class="danger" data-action="remove-skill-option" data-value="${skill}">X</button>
+      </span>
+    `).join('');
+  }
+
+  function selectOptions(values, selected) {
+    const combined = unique([...(values || []), selected || '']);
+    return combined.map((value) => (
+      `<option value="${value}" ${value === selected ? 'selected' : ''}>${value}</option>`
+    )).join('');
+  }
+
   function renderRooms() {
     roomsBody.innerHTML = '';
     state.rooms.forEach((room) => {
@@ -207,7 +307,7 @@
       tr.innerHTML = `
         <td><input data-field="id" value="${room.id || ''}" /></td>
         <td><input data-field="name" value="${room.name || ''}" /></td>
-        <td><input data-field="purpose" value="${room.purpose || ''}" /></td>
+        <td>${purposeCheckboxes(room)}</td>
         <td><button class="danger" data-action="remove-room" type="button">Remove</button></td>
       `;
       roomsBody.appendChild(tr);
@@ -234,7 +334,7 @@
       tr.innerHTML = `
         <td><input data-field="id" value="${employee.id || ''}" /></td>
         <td><input data-field="name" value="${employee.name || ''}" /></td>
-        <td><input data-field="skills" value="${(employee.skills || []).join(', ')}" /></td>
+        <td>${skillCheckboxes(employee)}</td>
         <td>
           <div class="availability-list">${availabilityHtml}</div>
           <button data-action="add-slot" type="button" class="secondary" style="margin-top:6px;">Add Availability</button>
@@ -254,8 +354,16 @@
       tr.innerHTML = `
         <td><input data-field="id" value="${session.id || ''}" /></td>
         <td><input data-field="name" value="${session.name || ''}" /></td>
-        <td><input data-field="requiredSkill" value="${session.requiredSkill || ''}" /></td>
-        <td><input data-field="purpose" value="${session.purpose || ''}" /></td>
+        <td>
+          <select data-field="requiredSkill">
+            ${selectOptions(state.skillOptions, session.requiredSkill || '')}
+          </select>
+        </td>
+        <td>
+          <select data-field="purpose">
+            ${selectOptions(state.purposeOptions, session.purpose || '')}
+          </select>
+        </td>
         <td data-day></td>
         <td><input type="time" data-field="start" value="${toTimeValue(session.start)}" /></td>
         <td><input type="time" data-field="end" value="${toTimeValue(session.end)}" /></td>
@@ -268,6 +376,7 @@
   }
 
   function renderAll() {
+    renderOptionConfig();
     renderRooms();
     renderEmployees();
     renderSessions();
@@ -275,23 +384,23 @@
 
   function parseStateFromDom() {
     const rooms = Array.from(roomsBody.querySelectorAll('tr')).map((tr) => ({
+      purpose: (tr.querySelector('input[data-field="room-purpose"]:checked') || {}).value || '',
       id: tr.querySelector('input[data-field="id"]').value.trim(),
       name: tr.querySelector('input[data-field="name"]').value.trim(),
-      purpose: tr.querySelector('input[data-field="purpose"]').value.trim()
     }));
 
     const employees = Array.from(employeesBody.querySelectorAll('tr')).map((tr) => {
-      const skillsRaw = tr.querySelector('input[data-field="skills"]').value;
       const availability = Array.from(tr.querySelectorAll('.availability-row')).map((row) => ({
         dayOfWeek: row.querySelector('select[data-field="dayOfWeek"]').value,
         start: toApiTime(row.querySelector('input[data-field="start"]').value),
         end: toApiTime(row.querySelector('input[data-field="end"]').value)
       }));
+      const skills = Array.from(tr.querySelectorAll('input[data-field="employee-skill"]:checked')).map((item) => item.value);
 
       return {
         id: tr.querySelector('input[data-field="id"]').value.trim(),
         name: tr.querySelector('input[data-field="name"]').value.trim(),
-        skills: skillsRaw.split(',').map(s => s.trim()).filter(Boolean),
+        skills,
         availability
       };
     });
@@ -299,14 +408,20 @@
     const sessions = Array.from(sessionsBody.querySelectorAll('tr')).map((tr) => ({
       id: tr.querySelector('input[data-field="id"]').value.trim(),
       name: tr.querySelector('input[data-field="name"]').value.trim(),
-      requiredSkill: tr.querySelector('input[data-field="requiredSkill"]').value.trim(),
-      purpose: tr.querySelector('input[data-field="purpose"]').value.trim(),
+      requiredSkill: (tr.querySelector('select[data-field="requiredSkill"]')?.value || '').trim(),
+      purpose: (tr.querySelector('select[data-field="purpose"]')?.value || '').trim(),
       dayOfWeek: tr.querySelector('td[data-day] select').value,
       start: toApiTime(tr.querySelector('input[data-field="start"]').value),
       end: toApiTime(tr.querySelector('input[data-field="end"]').value)
     }));
 
-    return { rooms, employees, sessions };
+    return {
+      rooms,
+      employees,
+      sessions,
+      purposeOptions: unique(state.purposeOptions),
+      skillOptions: unique(state.skillOptions)
+    };
   }
 
   async function loadMeta() {
@@ -331,8 +446,20 @@
           availability: e.availability || [],
           _uiid: uid()
         })),
-        sessions: (data.sessions || data.jobs || []).map(s => ({ ...s, _uiid: uid() }))
+        sessions: (data.sessions || data.jobs || []).map(s => ({ ...s, _uiid: uid() })),
+        purposeOptions: unique([
+          ...(data.purposeOptions || []),
+          ...((data.rooms || []).map(r => r.purpose)),
+          ...((data.sessions || data.jobs || []).map(s => s.purpose))
+        ]),
+        skillOptions: unique([
+          ...(data.skillOptions || []),
+          ...((data.employees || []).flatMap(e => e.skills || [])),
+          ...((data.sessions || data.jobs || []).map(s => s.requiredSkill))
+        ])
       };
+      if (state.purposeOptions.length === 0) state.purposeOptions = [...DEFAULT_PURPOSE_OPTIONS];
+      if (state.skillOptions.length === 0) state.skillOptions = [...DEFAULT_SKILL_OPTIONS];
 
       renderAll();
       showMessage('Loaded current saved data.', true);
@@ -362,7 +489,7 @@
   }
 
   document.getElementById('addRoomBtn').addEventListener('click', () => {
-    state.rooms.push({ _uiid: uid(), id: '', name: '', purpose: '' });
+    state.rooms.push({ _uiid: uid(), id: '', name: '', purpose: state.purposeOptions[0] || '' });
     renderRooms();
   });
 
@@ -376,8 +503,8 @@
       _uiid: uid(),
       id: '',
       name: '',
-      requiredSkill: '',
-      purpose: '',
+      requiredSkill: state.skillOptions[0] || '',
+      purpose: state.purposeOptions[0] || '',
       dayOfWeek: 'MONDAY',
       start: '08:00:00',
       end: '12:00:00'
@@ -385,11 +512,66 @@
     renderSessions();
   });
 
+  document.getElementById('addPurposeBtn').addEventListener('click', () => {
+    const input = document.getElementById('newPurposeInput');
+    const value = (input.value || '').trim();
+    if (!value) return;
+    state.purposeOptions = unique([...state.purposeOptions, value]);
+    input.value = '';
+    renderAll();
+  });
+
+  document.getElementById('addSkillBtn').addEventListener('click', () => {
+    const input = document.getElementById('newSkillInput');
+    const value = (input.value || '').trim();
+    if (!value) return;
+    state.skillOptions = unique([...state.skillOptions, value]);
+    input.value = '';
+    renderAll();
+  });
+
+  purposeOptionsList.addEventListener('click', (e) => {
+    if (e.target.dataset.action === 'remove-purpose-option') {
+      const value = e.target.dataset.value;
+      const purposeUsedByRoom = state.rooms.some((room) => room.purpose === value);
+      const purposeUsedBySession = state.sessions.some((session) => session.purpose === value);
+      if (purposeUsedByRoom || purposeUsedBySession) {
+        showMessage(`Cannot remove purpose "${value}" while it is used by rooms or sessions. Reassign those entries first.`, false);
+        return;
+      }
+      state.purposeOptions = state.purposeOptions.filter(v => v !== value);
+      renderAll();
+    }
+  });
+
+  skillOptionsList.addEventListener('click', (e) => {
+    if (e.target.dataset.action === 'remove-skill-option') {
+      const value = e.target.dataset.value;
+      const skillUsedByEmployee = state.employees.some((employee) => (employee.skills || []).includes(value));
+      const skillUsedBySession = state.sessions.some((session) => session.requiredSkill === value);
+      if (skillUsedByEmployee || skillUsedBySession) {
+        showMessage(`Cannot remove skill "${value}" while it is used by employees or sessions. Reassign those entries first.`, false);
+        return;
+      }
+      state.skillOptions = state.skillOptions.filter(v => v !== value);
+      renderAll();
+    }
+  });
+
   roomsBody.addEventListener('click', (e) => {
     if (e.target.dataset.action === 'remove-room') {
       const id = e.target.closest('tr').dataset.id;
       state.rooms = state.rooms.filter(r => r._uiid !== id);
       renderRooms();
+    }
+  });
+
+  roomsBody.addEventListener('change', (e) => {
+    if (e.target.dataset.field === 'room-purpose' && e.target.checked) {
+      const tr = e.target.closest('tr');
+      tr.querySelectorAll('input[data-field="room-purpose"]').forEach((checkbox) => {
+        if (checkbox !== e.target) checkbox.checked = false;
+      });
     }
   });
 
