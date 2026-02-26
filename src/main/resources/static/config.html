@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NHS Cardiology Scheduler - Configure</title>
+  <style>
+    :root {
+      --bg: #f4f7f3;
+      --panel: #ffffff;
+      --ink: #13231a;
+      --accent: #00703c;
+      --accent-soft: #d7efe1;
+      --warn: #a32020;
+      --border: #c6d9cc;
+      --muted: #6f8378;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Gill Sans", "Trebuchet MS", sans-serif;
+      background: radial-gradient(circle at top right, #e4f3e9, var(--bg));
+      color: var(--ink);
+    }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 24px 16px 40px; }
+    h1 { margin: 0 0 6px; font-size: 2rem; letter-spacing: 0.02em; }
+    .subtitle { margin-bottom: 10px; color: #32483a; }
+    .nav { display: flex; gap: 10px; margin: 0 0 16px; }
+    .nav a {
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--ink);
+      background: #f8fcf9;
+      font-weight: 600;
+    }
+    .nav a.active { background: var(--accent-soft); }
+    .file-path {
+      margin: 0 0 16px;
+      padding: 8px 10px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      background: var(--accent);
+    }
+    button.secondary { background: #3f5f50; }
+    button.danger { background: #8f2f2f; }
+    .message {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      display: none;
+    }
+    .message.ok { background: var(--accent-soft); border-color: var(--border); }
+    .message.error { background: #f8dede; border-color: #e7bbbb; color: var(--warn); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    th, td { border: 1px solid var(--border); padding: 8px; vertical-align: top; }
+    th { background: #eff8f2; text-align: left; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px;
+      font: inherit;
+      background: #fcfffd;
+    }
+    .availability-list { display: grid; gap: 6px; }
+    .availability-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+    .tiny { font-size: 0.85rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NHS Cardiology Scheduler</h1>
+  <p class="subtitle">Configure all rooms, employees, and sessions fields, then save to the shared file.</p>
+
+  <div class="nav">
+    <a href="/">Schedule</a>
+    <a href="/config.html" class="active">Configure Data</a>
+  </div>
+
+  <div id="filePath" class="file-path">Data file: loading...</div>
+
+  <div class="actions">
+    <button id="loadBtn" class="secondary">Reload Saved Data</button>
+    <button id="saveBtn">Save All Changes</button>
+  </div>
+  <div id="message" class="message"></div>
+
+  <div class="panel">
+    <h2>Rooms</h2>
+    <div class="actions"><button id="addRoomBtn" type="button">Add Room</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+        <tr><th>ID</th><th>Name</th><th>Purpose</th><th>Action</th></tr>
+        </thead>
+        <tbody id="roomsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Employees</h2>
+    <div class="actions"><button id="addEmployeeBtn" type="button">Add Employee</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+        <tr><th>ID</th><th>Name</th><th>Skills (comma-separated)</th><th>Availability</th><th>Action</th></tr>
+        </thead>
+        <tbody id="employeesBody"></tbody>
+      </table>
+    </div>
+    <p class="tiny">Availability times should support each assigned session window (4-hour sessions).</p>
+  </div>
+
+  <div class="panel">
+    <h2>Sessions</h2>
+    <div class="actions"><button id="addSessionBtn" type="button">Add Session</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Required Skill</th><th>Purpose</th><th>Day</th><th>Start</th><th>End</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="sessionsBody"></tbody>
+      </table>
+    </div>
+    <p class="tiny">Sessions must be exactly half-day (4 hours), e.g. `08:00-12:00` or `13:00-17:00`.</p>
+  </div>
+</div>
+
+<script>
+  const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+
+  let state = { rooms: [], employees: [], sessions: [] };
+
+  const roomsBody = document.getElementById('roomsBody');
+  const employeesBody = document.getElementById('employeesBody');
+  const sessionsBody = document.getElementById('sessionsBody');
+  const message = document.getElementById('message');
+  const filePath = document.getElementById('filePath');
+
+  const uid = () => Math.random().toString(36).slice(2, 9);
+
+  function showMessage(text, ok) {
+    message.style.display = 'block';
+    message.className = `message ${ok ? 'ok' : 'error'}`;
+    message.textContent = text;
+  }
+
+  function toTimeValue(value) {
+    return (value || '08:00:00').slice(0, 5);
+  }
+
+  function toApiTime(value) {
+    if (!value) return '';
+    return value.length === 5 ? `${value}:00` : value;
+  }
+
+  function daySelect(selectedDay) {
+    const select = document.createElement('select');
+    DAYS.forEach((day) => {
+      const option = document.createElement('option');
+      option.value = day;
+      option.textContent = day;
+      if (day === selectedDay) option.selected = true;
+      select.appendChild(option);
+    });
+    return select;
+  }
+
+  function renderRooms() {
+    roomsBody.innerHTML = '';
+    state.rooms.forEach((room) => {
+      const tr = document.createElement('tr');
+      tr.dataset.id = room._uiid;
+
+      tr.innerHTML = `
+        <td><input data-field="id" value="${room.id || ''}" /></td>
+        <td><input data-field="name" value="${room.name || ''}" /></td>
+        <td><input data-field="purpose" value="${room.purpose || ''}" /></td>
+        <td><button class="danger" data-action="remove-room" type="button">Remove</button></td>
+      `;
+      roomsBody.appendChild(tr);
+    });
+  }
+
+  function renderEmployees() {
+    employeesBody.innerHTML = '';
+    state.employees.forEach((employee) => {
+      const tr = document.createElement('tr');
+      tr.dataset.id = employee._uiid;
+
+      const availabilityHtml = employee.availability.map((slot, idx) => `
+        <div class="availability-row" data-idx="${idx}">
+          <select data-field="dayOfWeek">
+            ${DAYS.map(d => `<option value="${d}" ${d === slot.dayOfWeek ? 'selected' : ''}>${d}</option>`).join('')}
+          </select>
+          <input type="time" data-field="start" value="${toTimeValue(slot.start)}" />
+          <input type="time" data-field="end" value="${toTimeValue(slot.end)}" />
+          <button class="danger" data-action="remove-slot" type="button">X</button>
+        </div>
+      `).join('');
+
+      tr.innerHTML = `
+        <td><input data-field="id" value="${employee.id || ''}" /></td>
+        <td><input data-field="name" value="${employee.name || ''}" /></td>
+        <td><input data-field="skills" value="${(employee.skills || []).join(', ')}" /></td>
+        <td>
+          <div class="availability-list">${availabilityHtml}</div>
+          <button data-action="add-slot" type="button" class="secondary" style="margin-top:6px;">Add Availability</button>
+        </td>
+        <td><button class="danger" data-action="remove-employee" type="button">Remove</button></td>
+      `;
+      employeesBody.appendChild(tr);
+    });
+  }
+
+  function renderSessions() {
+    sessionsBody.innerHTML = '';
+    state.sessions.forEach((session) => {
+      const tr = document.createElement('tr');
+      tr.dataset.id = session._uiid;
+
+      tr.innerHTML = `
+        <td><input data-field="id" value="${session.id || ''}" /></td>
+        <td><input data-field="name" value="${session.name || ''}" /></td>
+        <td><input data-field="requiredSkill" value="${session.requiredSkill || ''}" /></td>
+        <td><input data-field="purpose" value="${session.purpose || ''}" /></td>
+        <td data-day></td>
+        <td><input type="time" data-field="start" value="${toTimeValue(session.start)}" /></td>
+        <td><input type="time" data-field="end" value="${toTimeValue(session.end)}" /></td>
+        <td><button class="danger" data-action="remove-session" type="button">Remove</button></td>
+      `;
+
+      tr.querySelector('[data-day]').appendChild(daySelect(session.dayOfWeek || 'MONDAY'));
+      sessionsBody.appendChild(tr);
+    });
+  }
+
+  function renderAll() {
+    renderRooms();
+    renderEmployees();
+    renderSessions();
+  }
+
+  function parseStateFromDom() {
+    const rooms = Array.from(roomsBody.querySelectorAll('tr')).map((tr) => ({
+      id: tr.querySelector('input[data-field="id"]').value.trim(),
+      name: tr.querySelector('input[data-field="name"]').value.trim(),
+      purpose: tr.querySelector('input[data-field="purpose"]').value.trim()
+    }));
+
+    const employees = Array.from(employeesBody.querySelectorAll('tr')).map((tr) => {
+      const skillsRaw = tr.querySelector('input[data-field="skills"]').value;
+      const availability = Array.from(tr.querySelectorAll('.availability-row')).map((row) => ({
+        dayOfWeek: row.querySelector('select[data-field="dayOfWeek"]').value,
+        start: toApiTime(row.querySelector('input[data-field="start"]').value),
+        end: toApiTime(row.querySelector('input[data-field="end"]').value)
+      }));
+
+      return {
+        id: tr.querySelector('input[data-field="id"]').value.trim(),
+        name: tr.querySelector('input[data-field="name"]').value.trim(),
+        skills: skillsRaw.split(',').map(s => s.trim()).filter(Boolean),
+        availability
+      };
+    });
+
+    const sessions = Array.from(sessionsBody.querySelectorAll('tr')).map((tr) => ({
+      id: tr.querySelector('input[data-field="id"]').value.trim(),
+      name: tr.querySelector('input[data-field="name"]').value.trim(),
+      requiredSkill: tr.querySelector('input[data-field="requiredSkill"]').value.trim(),
+      purpose: tr.querySelector('input[data-field="purpose"]').value.trim(),
+      dayOfWeek: tr.querySelector('td[data-day] select').value,
+      start: toApiTime(tr.querySelector('input[data-field="start"]').value),
+      end: toApiTime(tr.querySelector('input[data-field="end"]').value)
+    }));
+
+    return { rooms, employees, sessions };
+  }
+
+  async function loadMeta() {
+    const res = await fetch('/api/meta');
+    const meta = await res.json();
+    filePath.textContent = `Data file: ${meta.dataFile}`;
+  }
+
+  async function loadState() {
+    try {
+      const res = await fetch('/api/state');
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to load state', false);
+        return;
+      }
+
+      state = {
+        rooms: (data.rooms || []).map(r => ({ ...r, _uiid: uid() })),
+        employees: (data.employees || []).map(e => ({
+          ...e,
+          availability: e.availability || [],
+          _uiid: uid()
+        })),
+        sessions: (data.sessions || data.jobs || []).map(s => ({ ...s, _uiid: uid() }))
+      };
+
+      renderAll();
+      showMessage('Loaded current saved data.', true);
+    } catch (e) {
+      showMessage(e.message, false);
+    }
+  }
+
+  async function saveState() {
+    try {
+      const payload = parseStateFromDom();
+      const res = await fetch('/api/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to save state', false);
+        return;
+      }
+      showMessage('Saved all changes to shared data file.', true);
+      await loadState();
+    } catch (e) {
+      showMessage(e.message, false);
+    }
+  }
+
+  document.getElementById('addRoomBtn').addEventListener('click', () => {
+    state.rooms.push({ _uiid: uid(), id: '', name: '', purpose: '' });
+    renderRooms();
+  });
+
+  document.getElementById('addEmployeeBtn').addEventListener('click', () => {
+    state.employees.push({ _uiid: uid(), id: '', name: '', skills: [], availability: [] });
+    renderEmployees();
+  });
+
+  document.getElementById('addSessionBtn').addEventListener('click', () => {
+    state.sessions.push({
+      _uiid: uid(),
+      id: '',
+      name: '',
+      requiredSkill: '',
+      purpose: '',
+      dayOfWeek: 'MONDAY',
+      start: '08:00:00',
+      end: '12:00:00'
+    });
+    renderSessions();
+  });
+
+  roomsBody.addEventListener('click', (e) => {
+    if (e.target.dataset.action === 'remove-room') {
+      const id = e.target.closest('tr').dataset.id;
+      state.rooms = state.rooms.filter(r => r._uiid !== id);
+      renderRooms();
+    }
+  });
+
+  employeesBody.addEventListener('click', (e) => {
+    const action = e.target.dataset.action;
+    const tr = e.target.closest('tr');
+    if (!tr) return;
+    const id = tr.dataset.id;
+    const employee = state.employees.find(emp => emp._uiid === id);
+    if (!employee) return;
+
+    if (action === 'remove-employee') {
+      state.employees = state.employees.filter(emp => emp._uiid !== id);
+      renderEmployees();
+      return;
+    }
+
+    if (action === 'add-slot') {
+      employee.availability.push({ dayOfWeek: 'MONDAY', start: '08:00:00', end: '12:00:00' });
+      renderEmployees();
+      return;
+    }
+
+    if (action === 'remove-slot') {
+      const row = e.target.closest('.availability-row');
+      const idx = Number(row.dataset.idx);
+      employee.availability.splice(idx, 1);
+      renderEmployees();
+    }
+  });
+
+  sessionsBody.addEventListener('click', (e) => {
+    if (e.target.dataset.action === 'remove-session') {
+      const id = e.target.closest('tr').dataset.id;
+      state.sessions = state.sessions.filter(s => s._uiid !== id);
+      renderSessions();
+    }
+  });
+
+  document.getElementById('loadBtn').addEventListener('click', loadState);
+  document.getElementById('saveBtn').addEventListener('click', saveState);
+
+  (async () => {
+    await loadMeta();
+    await loadState();
+  })();
+</script>
+</body>
+</html>

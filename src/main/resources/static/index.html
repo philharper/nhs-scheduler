@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NHS Cardiology Scheduler - Schedule</title>
+  <style>
+    :root {
+      --bg: #f4f7f3;
+      --panel: #ffffff;
+      --ink: #13231a;
+      --accent: #00703c;
+      --accent-soft: #d7efe1;
+      --warn: #a32020;
+      --border: #c6d9cc;
+      --muted: #6f8378;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Gill Sans", "Trebuchet MS", sans-serif;
+      background: radial-gradient(circle at top right, #e4f3e9, var(--bg));
+      color: var(--ink);
+    }
+    .wrap { max-width: 1300px; margin: 0 auto; padding: 24px 16px 40px; }
+    h1 { margin: 0 0 6px; font-size: 2rem; letter-spacing: 0.02em; }
+    .subtitle { margin-bottom: 10px; color: #32483a; }
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+    .nav a {
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--ink);
+      background: #f8fcf9;
+      font-weight: 600;
+    }
+    .nav a.active { background: var(--accent-soft); }
+    .file-path {
+      margin: 0 0 16px;
+      padding: 8px 10px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      background: var(--accent);
+    }
+    button.secondary { background: #3f5f50; }
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      display: none;
+    }
+    .message.ok { background: var(--accent-soft); border-color: var(--border); }
+    .message.error { background: #f8dede; border-color: #e7bbbb; color: var(--warn); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(160px, 1fr));
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .day-column {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fcfffd;
+      min-height: 180px;
+    }
+    .day-header {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      background: #eff8f2;
+    }
+    .day-body { padding: 8px; display: grid; gap: 8px; }
+    .event-card {
+      border: 1px solid #b8d2c2;
+      border-left: 4px solid var(--accent);
+      border-radius: 7px;
+      padding: 8px;
+      background: #f8fdf9;
+      font-size: 0.88rem;
+    }
+    .event-time { font-weight: 700; }
+    .event-meta { color: #355344; margin-top: 3px; }
+    .empty-day {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-style: italic;
+      padding: 4px;
+    }
+    .unscheduled-list { margin: 10px 0 0; padding-left: 18px; }
+    .unscheduled-list li { margin-bottom: 4px; color: var(--warn); }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NHS Cardiology Scheduler</h1>
+  <p class="subtitle">Schedule view. Configure rooms, employees, and sessions on the separate config page.</p>
+
+  <div class="nav">
+    <a href="/" class="active">Schedule</a>
+    <a href="/config.html">Configure Data</a>
+  </div>
+
+  <div id="filePath" class="file-path">Data file: loading...</div>
+
+  <div class="actions">
+    <button id="generateBtn">Generate Weekly Schedule</button>
+    <button id="reloadBtn" class="secondary">Reload From Saved Data</button>
+  </div>
+
+  <div id="message" class="message"><pre id="messageText"></pre></div>
+
+  <div class="panel">
+    <h2>Weekly Calendar</h2>
+    <div id="calendarGrid" class="calendar-grid"></div>
+    <h2 style="margin-top: 14px;">Unscheduled Sessions</h2>
+    <ul id="unscheduledOutput" class="unscheduled-list"></ul>
+  </div>
+
+  <div class="panel">
+    <h2>Raw Schedule Result (JSON)</h2>
+    <pre id="resultOutput">No schedule generated yet.</pre>
+  </div>
+</div>
+
+<script>
+  const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+  const resultOutput = document.getElementById('resultOutput');
+  const filePath = document.getElementById('filePath');
+  const message = document.getElementById('message');
+  const messageText = document.getElementById('messageText');
+  const calendarGrid = document.getElementById('calendarGrid');
+  const unscheduledOutput = document.getElementById('unscheduledOutput');
+
+  const pretty = (obj) => JSON.stringify(obj, null, 2);
+
+  function showMessage(text, ok) {
+    message.style.display = 'block';
+    message.className = `message ${ok ? 'ok' : 'error'}`;
+    messageText.textContent = text;
+  }
+
+  function formatTime(timeValue) {
+    return (timeValue || '').slice(0, 5);
+  }
+
+  function buildCalendar(result) {
+    calendarGrid.innerHTML = '';
+    unscheduledOutput.innerHTML = '';
+
+    const assignments = (result && result.assignments) ? result.assignments : [];
+    const byDay = new Map(DAY_ORDER.map(day => [day, []]));
+
+    assignments.forEach((assignment) => {
+      const day = assignment.session.dayOfWeek;
+      if (byDay.has(day)) byDay.get(day).push(assignment);
+    });
+
+    DAY_ORDER.forEach((day) => {
+      const dayAssignments = byDay.get(day) || [];
+      dayAssignments.sort((a, b) => a.session.start.localeCompare(b.session.start));
+
+      const column = document.createElement('div');
+      column.className = 'day-column';
+
+      const header = document.createElement('div');
+      header.className = 'day-header';
+      header.textContent = day;
+      column.appendChild(header);
+
+      const body = document.createElement('div');
+      body.className = 'day-body';
+
+      if (dayAssignments.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-day';
+        empty.textContent = 'No assignments';
+        body.appendChild(empty);
+      } else {
+        dayAssignments.forEach((assignment) => {
+          const card = document.createElement('div');
+          card.className = 'event-card';
+
+          const time = document.createElement('div');
+          time.className = 'event-time';
+          time.textContent = `${formatTime(assignment.session.start)} - ${formatTime(assignment.session.end)}`;
+          card.appendChild(time);
+
+          const title = document.createElement('div');
+          title.textContent = assignment.session.name;
+          card.appendChild(title);
+
+          const meta1 = document.createElement('div');
+          meta1.className = 'event-meta';
+          meta1.textContent = `Room: ${assignment.room.name}`;
+          card.appendChild(meta1);
+
+          const meta2 = document.createElement('div');
+          meta2.className = 'event-meta';
+          meta2.textContent = `Staff: ${assignment.employee.name}`;
+          card.appendChild(meta2);
+
+          body.appendChild(card);
+        });
+      }
+
+      column.appendChild(body);
+      calendarGrid.appendChild(column);
+    });
+
+    const unscheduled = result?.unscheduledSessions || [];
+    if (unscheduled.length === 0) {
+      const li = document.createElement('li');
+      li.style.color = '#2f5f45';
+      li.textContent = 'All sessions scheduled.';
+      unscheduledOutput.appendChild(li);
+    } else {
+      unscheduled.forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = `${item.session.id} (${item.session.name}): ${item.reason}`;
+        unscheduledOutput.appendChild(li);
+      });
+    }
+  }
+
+  async function loadMeta() {
+    const res = await fetch('/api/meta');
+    const meta = await res.json();
+    filePath.textContent = `Data file: ${meta.dataFile}`;
+  }
+
+  async function generateSchedule() {
+    try {
+      const res = await fetch('/api/schedule', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to generate schedule', false);
+        return;
+      }
+      resultOutput.textContent = pretty(data);
+      buildCalendar(data);
+      showMessage('Schedule generated.', true);
+    } catch (e) {
+      showMessage(e.message, false);
+    }
+  }
+
+  document.getElementById('generateBtn').addEventListener('click', generateSchedule);
+  document.getElementById('reloadBtn').addEventListener('click', generateSchedule);
+
+  (async () => {
+    await loadMeta();
+    buildCalendar({ assignments: [], unscheduledSessions: [] });
+    await generateSchedule();
+  })();
+</script>
+</body>
+</html>

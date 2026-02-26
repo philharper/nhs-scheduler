@@ -1,0 +1,607 @@
+{
+  "rooms" : [ {
+    "id" : "CR1",
+    "name" : "ECG Suite 1",
+    "purpose" : "ecg"
+  }, {
+    "id" : "CR2",
+    "name" : "ECG Suite 2",
+    "purpose" : "ecg"
+  }, {
+    "id" : "CR3",
+    "name" : "Echo Lab",
+    "purpose" : "echo"
+  }, {
+    "id" : "CR4",
+    "name" : "Stress Test Lab",
+    "purpose" : "stress-test"
+  }, {
+    "id" : "CR5",
+    "name" : "Holter Room",
+    "purpose" : "holter"
+  }, {
+    "id" : "CR6",
+    "name" : "Cardiac Bloods Room",
+    "purpose" : "cardiac-bloods"
+  }, {
+    "id" : "CR7",
+    "name" : "Diagnostics Consult Room 1",
+    "purpose" : "diagnostic-consult"
+  }, {
+    "id" : "CR8",
+    "name" : "Diagnostics Consult Room 2",
+    "purpose" : "diagnostic-consult"
+  } ],
+  "employees" : [ {
+    "id" : "E1",
+    "name" : "Aisha Rahman",
+    "skills" : [ "ecg" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E2",
+    "name" : "Connor Evans",
+    "skills" : [ "ecg", "holter" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E3",
+    "name" : "Meera Nair",
+    "skills" : [ "echo" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E4",
+    "name" : "Oliver Price",
+    "skills" : [ "diagnostic-consult", "echo" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E5",
+    "name" : "Grace Liu",
+    "skills" : [ "stress-test", "ecg" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E6",
+    "name" : "Daniel McKay",
+    "skills" : [ "holter", "cardiac-bloods" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E7",
+    "name" : "Hannah Brooks",
+    "skills" : [ "cardiac-bloods" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E8",
+    "name" : "Ravi Menon",
+    "skills" : [ "diagnostic-consult", "stress-test" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E9",
+    "name" : "Sophie Kent",
+    "skills" : [ "diagnostic-consult", "holter" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "17:00:00"
+    } ]
+  }, {
+    "id" : "E10",
+    "name" : "Noah Clarke",
+    "skills" : [ "ecg", "echo", "cardiac-bloods" ],
+    "availability" : [ {
+      "dayOfWeek" : "MONDAY",
+      "start" : "08:00:00",
+      "end" : "13:00:00"
+    }, {
+      "dayOfWeek" : "TUESDAY",
+      "start" : "08:00:00",
+      "end" : "13:00:00"
+    }, {
+      "dayOfWeek" : "WEDNESDAY",
+      "start" : "08:00:00",
+      "end" : "13:00:00"
+    }, {
+      "dayOfWeek" : "THURSDAY",
+      "start" : "08:00:00",
+      "end" : "13:00:00"
+    }, {
+      "dayOfWeek" : "FRIDAY",
+      "start" : "08:00:00",
+      "end" : "13:00:00"
+    } ]
+  } ],
+  "sessions" : [ {
+    "id" : "S1",
+    "name" : "Rapid Access ECG Session",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "MONDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S2",
+    "name" : "Transthoracic Echo Session",
+    "requiredSkill" : "echo",
+    "purpose" : "echo",
+    "dayOfWeek" : "MONDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S3",
+    "name" : "Holter Fit and Education",
+    "requiredSkill" : "holter",
+    "purpose" : "holter",
+    "dayOfWeek" : "MONDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S4",
+    "name" : "Cardiac Biomarker Bloods",
+    "requiredSkill" : "cardiac-bloods",
+    "purpose" : "cardiac-bloods",
+    "dayOfWeek" : "MONDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S5",
+    "name" : "Exercise Stress Testing",
+    "requiredSkill" : "stress-test",
+    "purpose" : "stress-test",
+    "dayOfWeek" : "MONDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S6",
+    "name" : "Chest Pain Review Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "MONDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S7",
+    "name" : "Arrhythmia Follow-Up Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "MONDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S8",
+    "name" : "Afternoon ECG Overflow",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "MONDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S9",
+    "name" : "Rapid Access ECG Session",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S10",
+    "name" : "Valve Echo Assessment",
+    "requiredSkill" : "echo",
+    "purpose" : "echo",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S11",
+    "name" : "Holter Setup Session",
+    "requiredSkill" : "holter",
+    "purpose" : "holter",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S12",
+    "name" : "Cardiac Biomarker Bloods",
+    "requiredSkill" : "cardiac-bloods",
+    "purpose" : "cardiac-bloods",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S13",
+    "name" : "Stress Test Monitoring",
+    "requiredSkill" : "stress-test",
+    "purpose" : "stress-test",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S14",
+    "name" : "Heart Failure Review Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S15",
+    "name" : "Post-PCI Diagnostic Review",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S16",
+    "name" : "Afternoon ECG Overflow",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "TUESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S17",
+    "name" : "Rapid Access ECG Session",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S18",
+    "name" : "Structural Echo Session",
+    "requiredSkill" : "echo",
+    "purpose" : "echo",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S19",
+    "name" : "Holter Fit and Triage",
+    "requiredSkill" : "holter",
+    "purpose" : "holter",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S20",
+    "name" : "Cardiac Biomarker Bloods",
+    "requiredSkill" : "cardiac-bloods",
+    "purpose" : "cardiac-bloods",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S21",
+    "name" : "Stress Test Monitoring",
+    "requiredSkill" : "stress-test",
+    "purpose" : "stress-test",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S22",
+    "name" : "Arrhythmia Review Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S23",
+    "name" : "Valve Follow-Up Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S24",
+    "name" : "Afternoon ECG Overflow",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "WEDNESDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S25",
+    "name" : "Rapid Access ECG Session",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S26",
+    "name" : "Dyspnoea Echo Assessment",
+    "requiredSkill" : "echo",
+    "purpose" : "echo",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S27",
+    "name" : "Holter Fit and Return",
+    "requiredSkill" : "holter",
+    "purpose" : "holter",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S28",
+    "name" : "Cardiac Biomarker Bloods",
+    "requiredSkill" : "cardiac-bloods",
+    "purpose" : "cardiac-bloods",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S29",
+    "name" : "Stress Test Monitoring",
+    "requiredSkill" : "stress-test",
+    "purpose" : "stress-test",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S30",
+    "name" : "Heart Failure Review Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S31",
+    "name" : "Post-Ablation Review Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S32",
+    "name" : "Afternoon ECG Overflow",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "THURSDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S33",
+    "name" : "Rapid Access ECG Session",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S34",
+    "name" : "Pre-Discharge Echo Session",
+    "requiredSkill" : "echo",
+    "purpose" : "echo",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S35",
+    "name" : "Holter Fit and Education",
+    "requiredSkill" : "holter",
+    "purpose" : "holter",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S36",
+    "name" : "Cardiac Biomarker Bloods",
+    "requiredSkill" : "cardiac-bloods",
+    "purpose" : "cardiac-bloods",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "08:00:00",
+    "end" : "12:00:00"
+  }, {
+    "id" : "S37",
+    "name" : "Stress Test Monitoring",
+    "requiredSkill" : "stress-test",
+    "purpose" : "stress-test",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S38",
+    "name" : "Complex Diagnostics Review",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S39",
+    "name" : "Post-Investigation Results Clinic",
+    "requiredSkill" : "diagnostic-consult",
+    "purpose" : "diagnostic-consult",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  }, {
+    "id" : "S40",
+    "name" : "Afternoon ECG Overflow",
+    "requiredSkill" : "ecg",
+    "purpose" : "ecg",
+    "dayOfWeek" : "FRIDAY",
+    "start" : "13:00:00",
+    "end" : "17:00:00"
+  } ]
+}
