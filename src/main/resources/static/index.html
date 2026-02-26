@@ -79,16 +79,6 @@
       color: var(--md-on-primary);
       box-shadow: var(--md-shadow-1);
     }
-    .file-path {
-      margin: 0 0 16px;
-      padding: 10px 12px;
-      background: var(--md-surface);
-      border: 1px solid var(--md-outline);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      word-break: break-all;
-      box-shadow: var(--md-shadow-1);
-    }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
     button {
       border: 0;
@@ -291,8 +281,6 @@
     </div>
   </div>
   <div class="wrap">
-    <div id="filePath" class="file-path">Data file: loading...</div>
-
     <div class="actions">
       <button id="generateBtn">Generate Weekly Schedule</button>
       <button id="reloadBtn" class="secondary">Reload From Saved Data</button>
@@ -326,7 +314,6 @@
 
 <script>
   const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-  const filePath = document.getElementById('filePath');
   const message = document.getElementById('message');
   const messageText = document.getElementById('messageText');
   const calendarTable = document.getElementById('calendarTable');
@@ -535,12 +522,6 @@
     }
   }
 
-  async function loadMeta() {
-    const res = await fetch('/api/meta');
-    const meta = await res.json();
-    filePath.textContent = `Data file: ${meta.dataFile}`;
-  }
-
   async function loadRooms() {
     const res = await fetch('/api/state');
     const data = await res.json();
@@ -621,7 +602,6 @@
   });
 
   (async () => {
-    await loadMeta();
     await loadRooms();
     buildCalendar({ assignments: [], unscheduledSessions: [] });
     await loadSchedule();

@@ -284,9 +284,9 @@
   "schedule" : {
     "assignments" : [ {
       "employee" : {
-        "id" : "E5",
-        "name" : "Grace Liu",
-        "skills" : [ "stress-test", "ecg" ],
+        "id" : "E1",
+        "name" : "Kay Harper",
+        "skills" : [ "ecg" ],
         "availability" : [ {
           "dayOfWeek" : "MONDAY",
           "start" : "08:00:00",

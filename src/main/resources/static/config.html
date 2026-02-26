@@ -70,16 +70,6 @@
       color: var(--md-on-primary);
       box-shadow: var(--md-shadow-1);
     }
-    .file-path {
-      margin: 0 0 16px;
-      padding: 10px 12px;
-      background: var(--md-surface);
-      border: 1px solid var(--md-outline);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      word-break: break-all;
-      box-shadow: var(--md-shadow-1);
-    }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
     button {
       border: 0;
@@ -218,8 +208,6 @@
   </div>
   <div class="wrap">
 
-    <div id="filePath" class="file-path">Data file: loading...</div>
-
     <div class="actions">
       <button id="loadBtn" class="secondary">Reload Saved Data</button>
       <button id="saveBtn">Save All Changes</button>
@@ -295,7 +283,6 @@
   const employeesBody = document.getElementById('employeesBody');
   const sessionsBody = document.getElementById('sessionsBody');
   const message = document.getElementById('message');
-  const filePath = document.getElementById('filePath');
   const purposeOptionsList = document.getElementById('purposeOptionsList');
   const skillOptionsList = document.getElementById('skillOptionsList');
 
@@ -504,12 +491,6 @@
     };
   }
 
-  async function loadMeta() {
-    const res = await fetch('/api/meta');
-    const meta = await res.json();
-    filePath.textContent = `Data file: ${meta.dataFile}`;
-  }
-
   async function loadState() {
     try {
       const res = await fetch('/api/state');
@@ -695,7 +676,6 @@
   document.getElementById('saveBtn').addEventListener('click', saveState);
 
   (async () => {
-    await loadMeta();
     await loadState();
   })();
 </script>
