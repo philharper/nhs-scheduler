@@ -507,6 +507,23 @@
     renderSessions();
   }
 
+  function syncEmployeeFromRow(tr) {
+    if (!tr) return null;
+    const employee = state.employees.find((item) => item._uiid === tr.dataset.id);
+    if (!employee) return null;
+
+    employee.id = tr.querySelector('input[data-field="id"]').value.trim();
+    employee.name = tr.querySelector('input[data-field="name"]').value.trim();
+    employee.skills = Array.from(tr.querySelectorAll('input[data-field="employee-skill"]:checked')).map((item) => item.value);
+    employee.availability = Array.from(tr.querySelectorAll('.availability-row')).map((row) => ({
+      dayOfWeek: row.querySelector('select[data-field="dayOfWeek"]').value,
+      start: toApiTime(row.querySelector('input[data-field="start"]').value),
+      end: toApiTime(row.querySelector('input[data-field="end"]').value)
+    }));
+
+    return employee;
+  }
+
   function parseStateFromDom() {
     const rooms = Array.from(roomsBody.querySelectorAll('tr')).map((tr) => ({
       purpose: (tr.querySelector('input[data-field="room-purpose"]:checked') || {}).value || '',
@@ -704,7 +721,7 @@
     const tr = e.target.closest('tr');
     if (!tr) return;
     const id = tr.dataset.id;
-    const employee = state.employees.find(emp => emp._uiid === id);
+    const employee = syncEmployeeFromRow(tr);
     if (!employee) return;
 
     if (action === 'remove-employee') {
@@ -725,6 +742,16 @@
       employee.availability.splice(idx, 1);
       renderEmployees();
     }
+  });
+
+  employeesBody.addEventListener('input', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr) syncEmployeeFromRow(tr);
+  });
+
+  employeesBody.addEventListener('change', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr) syncEmployeeFromRow(tr);
   });
 
   sessionsBody.addEventListener('click', (e) => {
