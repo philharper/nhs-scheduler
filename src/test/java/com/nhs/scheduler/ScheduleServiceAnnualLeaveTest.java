@@ -1,7 +1,5 @@
 package com.nhs.scheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhs.scheduler.config.JacksonConfig;
 import com.nhs.scheduler.model.AnnualLeaveEntry;
 import com.nhs.scheduler.model.AvailabilityWindow;
 import com.nhs.scheduler.model.Employee;
@@ -9,12 +7,9 @@ import com.nhs.scheduler.model.Room;
 import com.nhs.scheduler.model.ScheduleResult;
 import com.nhs.scheduler.model.ScheduleState;
 import com.nhs.scheduler.model.Session;
-import com.nhs.scheduler.service.FileStateStore;
 import com.nhs.scheduler.service.ScheduleService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,14 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ScheduleServiceAnnualLeaveTest {
 
-    @TempDir
-    Path tempDir;
-
     @Test
     void employeeOnAnnualLeaveIsNotScheduled() {
-        ObjectMapper objectMapper = new JacksonConfig().objectMapper();
-        FileStateStore store = new FileStateStore(objectMapper, tempDir.resolve("schedule-state.json").toString());
-        store.init();
+        InMemoryScheduleStateStore store = new InMemoryScheduleStateStore();
         ScheduleService scheduleService = new ScheduleService(store);
 
         ScheduleState state = new ScheduleState();

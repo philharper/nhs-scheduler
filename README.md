@@ -9,12 +9,13 @@ A scheduling app for NHS cardiology diagnostic departments.
 - Enforces each session as a half-day block (4 hours exactly).
 - Generates a schedule that assigns each session to an appropriate room and available, qualified employee.
 - Marks sessions as unscheduled when constraints cannot be met.
-- Persists all state to a shareable JSON file: `data/schedule-state.json`.
+- Persists all state in MongoDB.
 - Persists schedule results separately by selected week, with the current week defaulting to the current Monday.
 
 ## Tech
 - Java 21
 - Spring Boot 3
+- MongoDB
 - Two-page HTML UI:
   - `/` schedule calendar
   - `/config.html` full data configuration
@@ -23,6 +24,7 @@ A scheduling app for NHS cardiology diagnostic departments.
 
 ## Run
 1. Ensure Java 21 and Maven are installed.
+2. Ensure MongoDB is running, or set `MONGODB_URI` to your target database.
 2. Start app:
    ```bash
    mvn spring-boot:run
@@ -86,3 +88,4 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 - Room is chosen automatically based on session purpose and room availability.
 - Employee must have required skill and availability covering the session window.
 - Session duration must be exactly 4 hours.
+- On first startup against an empty Mongo database, the app migrates legacy state from `scheduler.data-file` if that JSON file exists.

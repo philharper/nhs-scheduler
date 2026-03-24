@@ -28,19 +28,19 @@ import java.util.Set;
 public class ScheduleService {
     private static final long HALF_DAY_MINUTES = 240;
 
-    private final FileStateStore fileStateStore;
+    private final ScheduleStateStore scheduleStateStore;
 
-    public ScheduleService(FileStateStore fileStateStore) {
-        this.fileStateStore = fileStateStore;
+    public ScheduleService(ScheduleStateStore scheduleStateStore) {
+        this.scheduleStateStore = scheduleStateStore;
     }
 
     public ScheduleState getState() {
-        return normalizeState(fileStateStore.read());
+        return normalizeState(scheduleStateStore.read());
     }
 
     public ScheduleState replaceState(ScheduleState state) {
         validateState(state);
-        ScheduleState existing = normalizeState(fileStateStore.read());
+        ScheduleState existing = normalizeState(scheduleStateStore.read());
         if (state.getScheduleWeekStart() == null) {
             state.setScheduleWeekStart(existing.getScheduleWeekStart());
         }
@@ -48,7 +48,7 @@ public class ScheduleService {
             state.setSchedulesByWeek(existing.getSchedulesByWeek());
         }
         ScheduleState normalized = normalizeState(state);
-        fileStateStore.write(normalized);
+        scheduleStateStore.write(normalized);
         return normalized;
     }
 
@@ -66,7 +66,7 @@ public class ScheduleService {
         ScheduleState state = getState();
         state.setScheduleWeekStart(scheduleWeekStart);
         ScheduleState normalized = normalizeState(state);
-        fileStateStore.write(normalized);
+        scheduleStateStore.write(normalized);
         return normalized;
     }
 
@@ -122,7 +122,7 @@ public class ScheduleService {
         state.setScheduleWeekStart(weekStart);
         state.getSchedulesByWeek().put(weekKey, result);
         state.setSchedule(result);
-        fileStateStore.write(state);
+        scheduleStateStore.write(state);
 
         return result;
     }
@@ -186,12 +186,12 @@ public class ScheduleService {
         target.setEmployee(replacement);
         state.getSchedulesByWeek().put(weekKey, schedule);
         state.setSchedule(schedule);
-        fileStateStore.write(state);
+        scheduleStateStore.write(state);
         return schedule;
     }
 
     public String getDataFilePath() {
-        return fileStateStore.getFilePath();
+        return scheduleStateStore.getStorageDescription();
     }
 
     private Employee chooseEmployee(List<Employee> employees,

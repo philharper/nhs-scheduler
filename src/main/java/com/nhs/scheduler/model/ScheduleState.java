@@ -3,6 +3,8 @@ package com.nhs.scheduler.model;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,7 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Document("schedule_state")
 public class ScheduleState {
+    public static final String SINGLETON_ID = "primary";
+
+    @Id
+    private String id = SINGLETON_ID;
+
     @Valid
     private List<Room> rooms = new ArrayList<>();
 
@@ -26,6 +34,14 @@ public class ScheduleState {
     private List<String> purposeOptions = new ArrayList<>();
     private List<String> skillOptions = new ArrayList<>();
     private ScheduleResult schedule;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public List<Room> getRooms() {
         return rooms;
