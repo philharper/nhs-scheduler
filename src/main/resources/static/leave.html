@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NHS Cardiology Scheduler - Annual Leave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --md-primary: #19673b;
+      --md-primary-weak: #deeee3;
+      --md-on-primary: #ffffff;
+      --md-surface: #ffffff;
+      --md-surface-soft: #f7faf8;
+      --md-bg: #eef2ef;
+      --md-on-surface: #1a201c;
+      --md-on-surface-muted: #5f675f;
+      --md-outline: #c6cec8;
+      --md-error: #b3261e;
+      --md-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.12);
+      --md-shadow-2: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Roboto", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 100% -10%, #dbece1 0%, transparent 35%),
+        radial-gradient(circle at -10% 110%, #dfe8ff 0%, transparent 40%),
+        var(--md-bg);
+      color: var(--md-on-surface);
+    }
+    .app-shell { min-height: 100vh; }
+    .wrap { max-width: 1420px; margin: 0 auto; padding: 20px 16px 36px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--md-outline);
+      background: color-mix(in srgb, var(--md-surface) 88%, transparent);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--md-shadow-1);
+    }
+    .topbar-inner {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.01em; font-weight: 700; }
+    .subtitle { margin: 0; color: var(--md-on-surface-muted); font-size: 0.95rem; }
+    .nav { display: flex; gap: 8px; margin: 0; align-items: center; flex-wrap: wrap; }
+    .nav a {
+      text-decoration: none;
+      border: 1px solid var(--md-outline);
+      border-radius: 999px;
+      padding: 7px 14px;
+      color: var(--md-on-surface);
+      background: var(--md-surface);
+      font-weight: 500;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+    .nav a:hover { background: var(--md-surface-soft); }
+    .nav a.active {
+      border-color: transparent;
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+      box-shadow: var(--md-shadow-1);
+    }
+    .nav form { margin-left: auto; }
+    .logout-btn { padding: 7px 14px; font-size: 0.92rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--md-on-primary);
+      background: var(--md-primary);
+      box-shadow: var(--md-shadow-1);
+      transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+    }
+    button:hover { filter: brightness(1.04); box-shadow: var(--md-shadow-2); }
+    button:active { transform: translateY(1px); }
+    button.secondary {
+      background: color-mix(in srgb, var(--md-primary) 16%, var(--md-surface));
+      color: var(--md-primary);
+      border: 1px solid color-mix(in srgb, var(--md-primary) 30%, transparent);
+    }
+    button.danger {
+      background: color-mix(in srgb, var(--md-error) 18%, var(--md-surface));
+      color: var(--md-error);
+      border: 1px solid color-mix(in srgb, var(--md-error) 30%, transparent);
+    }
+    .message {
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      display: none;
+      box-shadow: var(--md-shadow-1);
+    }
+    .message.ok { background: var(--md-primary-weak); border-color: color-mix(in srgb, var(--md-primary) 35%, transparent); }
+    .message.error { background: #fde9e8; border-color: #f3beb9; color: var(--md-error); }
+    .panel {
+      background: var(--md-surface);
+      border: 1px solid var(--md-outline);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 14px;
+      box-shadow: var(--md-shadow-2);
+    }
+    .panel h2 { margin: 0 0 10px; font-size: 1.1rem; font-weight: 600; }
+    .panel-subtitle { margin: -2px 0 12px; color: var(--md-on-surface-muted); font-size: 0.9rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 14px;
+    }
+    .field-group {
+      display: grid;
+      gap: 6px;
+      align-content: start;
+    }
+    label { font-size: 0.92rem; font-weight: 600; }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--md-outline);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font: inherit;
+      background: var(--md-surface);
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--md-primary) 70%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary) 16%, transparent);
+    }
+    .employee-list {
+      display: grid;
+      gap: 12px;
+    }
+    .employee-card {
+      border: 1px solid var(--md-outline);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fcfefd;
+    }
+    .employee-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .employee-name { font-size: 1rem; font-weight: 600; }
+    .employee-meta { color: var(--md-on-surface-muted); font-size: 0.88rem; }
+    .leave-list { display: grid; gap: 8px; }
+    .leave-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .empty-leave {
+      color: var(--md-on-surface-muted);
+      font-size: 0.9rem;
+      font-style: italic;
+      padding: 10px;
+      border: 1px dashed var(--md-outline);
+      border-radius: 10px;
+      background: var(--md-surface-soft);
+    }
+    .tiny { font-size: 0.85rem; color: var(--md-on-surface-muted); }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .wrap { padding: 14px 10px 24px; }
+      .topbar-inner { padding: 10px; }
+      h1 { font-size: 1.2rem; }
+      .subtitle { font-size: 0.86rem; }
+      .panel { border-radius: 12px; padding: 10px; }
+      .leave-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <h1>NHS Cardiology Scheduler</h1>
+      <p class="subtitle">Manage the active schedule week and annual leave periods that block staff from being scheduled.</p>
+      <div class="nav">
+        <a href="/">Schedule</a>
+        <a href="/config.html">Configure Data</a>
+        <a href="/leave.html" class="active">Annual Leave</a>
+        <form method="post" action="/logout">
+          <button type="submit" class="secondary logout-btn">Log out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="actions">
+      <button id="loadBtn" class="secondary" type="button">Reload Saved Data</button>
+      <button id="saveBtn" type="button">Save Leave Changes</button>
+    </div>
+    <div id="message" class="message"></div>
+
+    <div class="panel">
+      <h2>Schedule Week</h2>
+      <p class="panel-subtitle">Sessions are mapped into the week that starts on this Monday. Annual leave is checked against the real dates in that week.</p>
+      <div class="grid">
+        <div class="field-group">
+          <label for="scheduleWeekStart">Week commencing (Monday)</label>
+          <input id="scheduleWeekStart" type="date" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Employee Annual Leave</h2>
+      <p class="panel-subtitle">Any employee on leave during a session date will be excluded from scheduling and override choices.</p>
+      <div id="employeeList" class="employee-list"></div>
+      <p class="tiny">Leave entries are full-day date ranges, inclusive of both start and end dates.</p>
+    </div>
+  </div>
+</div>
+<script>
+  let state = { rooms: [], employees: [], sessions: [], purposeOptions: [], skillOptions: [], scheduleWeekStart: '' };
+
+  const employeeList = document.getElementById('employeeList');
+  const message = document.getElementById('message');
+  const scheduleWeekStartInput = document.getElementById('scheduleWeekStart');
+
+  function showMessage(text, ok) {
+    message.style.display = 'block';
+    message.className = `message ${ok ? 'ok' : 'error'}`;
+    message.textContent = text;
+  }
+
+  function uid() {
+    return Math.random().toString(36).slice(2, 9);
+  }
+
+  function renderEmployees() {
+    employeeList.innerHTML = '';
+
+    state.employees.forEach((employee) => {
+      const card = document.createElement('div');
+      card.className = 'employee-card';
+      card.dataset.id = employee._uiid;
+
+      const leaveRows = (employee.annualLeave || []).map((entry, idx) => `
+        <div class="leave-row" data-index="${idx}">
+          <div class="field-group">
+            <label>Start date</label>
+            <input type="date" data-field="startDate" value="${entry.startDate || ''}" />
+          </div>
+          <div class="field-group">
+            <label>End date</label>
+            <input type="date" data-field="endDate" value="${entry.endDate || ''}" />
+          </div>
+          <button class="danger" type="button" data-action="remove-leave">Remove</button>
+        </div>
+      `).join('');
+
+      card.innerHTML = `
+        <div class="employee-header">
+          <div>
+            <div class="employee-name">${employee.name}</div>
+            <div class="employee-meta">${employee.id} • ${(employee.skills || []).join(', ') || 'No skills'}</div>
+          </div>
+          <button type="button" data-action="add-leave">Add Leave</button>
+        </div>
+        <div class="leave-list">
+          ${leaveRows || '<div class="empty-leave">No annual leave recorded.</div>'}
+        </div>
+      `;
+
+      employeeList.appendChild(card);
+    });
+  }
+
+  function parseStateFromDom() {
+    const employees = Array.from(employeeList.querySelectorAll('.employee-card')).map((card) => {
+      const original = state.employees.find((employee) => employee._uiid === card.dataset.id);
+      const annualLeave = Array.from(card.querySelectorAll('.leave-row')).map((row) => ({
+        startDate: row.querySelector('input[data-field="startDate"]').value,
+        endDate: row.querySelector('input[data-field="endDate"]').value
+      })).filter((entry) => entry.startDate || entry.endDate);
+
+      return {
+        id: original.id,
+        name: original.name,
+        skills: original.skills || [],
+        availability: original.availability || [],
+        annualLeave
+      };
+    });
+
+    return {
+      rooms: state.rooms || [],
+      employees,
+      sessions: state.sessions || [],
+      purposeOptions: state.purposeOptions || [],
+      skillOptions: state.skillOptions || [],
+      scheduleWeekStart: scheduleWeekStartInput.value || null
+    };
+  }
+
+  async function loadState() {
+    try {
+      const res = await fetch('/api/state');
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to load state', false);
+        return;
+      }
+
+      state = {
+        rooms: data.rooms || [],
+        employees: (data.employees || []).map((employee) => ({
+          ...employee,
+          availability: employee.availability || [],
+          annualLeave: employee.annualLeave || [],
+          _uiid: uid()
+        })),
+        sessions: data.sessions || data.jobs || [],
+        purposeOptions: data.purposeOptions || [],
+        skillOptions: data.skillOptions || [],
+        scheduleWeekStart: data.scheduleWeekStart || ''
+      };
+
+      scheduleWeekStartInput.value = state.scheduleWeekStart || '';
+      renderEmployees();
+      showMessage('Loaded current saved data.', true);
+    } catch (e) {
+      showMessage(e.message, false);
+    }
+  }
+
+  async function saveState() {
+    try {
+      const payload = parseStateFromDom();
+      const res = await fetch('/api/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to save annual leave', false);
+        return;
+      }
+      showMessage('Saved schedule week and annual leave.', true);
+      await loadState();
+    } catch (e) {
+      showMessage(e.message, false);
+    }
+  }
+
+  employeeList.addEventListener('click', (e) => {
+    const card = e.target.closest('.employee-card');
+    if (!card) return;
+    const employee = state.employees.find((item) => item._uiid === card.dataset.id);
+    if (!employee) return;
+
+    if (e.target.dataset.action === 'add-leave') {
+      employee.annualLeave.push({ startDate: '', endDate: '' });
+      renderEmployees();
+      return;
+    }
+
+    if (e.target.dataset.action === 'remove-leave') {
+      const row = e.target.closest('.leave-row');
+      const index = Number(row.dataset.index);
+      employee.annualLeave.splice(index, 1);
+      renderEmployees();
+    }
+  });
+
+  document.getElementById('loadBtn').addEventListener('click', loadState);
+  document.getElementById('saveBtn').addEventListener('click', saveState);
+
+  (async () => {
+    await loadState();
+  })();
+</script>
+</body>
+</html>

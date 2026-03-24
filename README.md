@@ -17,6 +17,7 @@ A scheduling app for NHS cardiology diagnostic departments.
 - Two-page HTML UI:
   - `/` schedule calendar
   - `/config.html` full data configuration
+  - `/leave.html` annual leave and schedule week management
 - REST API under `/api`
 
 ## Run
@@ -34,13 +35,16 @@ A scheduling app for NHS cardiology diagnostic departments.
    - Login page: `http://localhost:8080/login.html`
    - Schedule page: `http://localhost:8080/`
    - Data configuration page: `http://localhost:8080/config.html`
+   - Annual leave page: `http://localhost:8080/leave.html`
    - State API: `http://localhost:8080/api/state`
 
 ## JSON model
 - `rooms[]`: `{ id, name, purpose }`
 - `employees[]`: `{ id, name, skills[], availability[] }`
+- `employees[].annualLeave[]`: `{ startDate, endDate }`
 - `availability[]`: `{ dayOfWeek, start, end }`
 - `sessions[]`: `{ id, name, requiredSkill, purpose, dayOfWeek, start, end }`
+- `scheduleWeekStart`: Monday date used to map the weekly template to actual calendar dates
 - `purposeOptions[]`: configurable purpose values used by room purpose checkboxes
 - `skillOptions[]`: configurable skill values used by employee skill checkboxes
 
@@ -73,6 +77,7 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 
 ## Notes
 - All room, employee, and session fields are editable via the configuration page UI.
+- Annual leave is managed on the dedicated leave page and blocks scheduling for the matching calendar dates.
 - Room usage is exclusive by time window.
 - Employee sessions cannot overlap.
 - Room is chosen automatically based on session purpose and room availability.

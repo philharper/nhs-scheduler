@@ -1,6 +1,7 @@
 package com.nhs.scheduler.service;
 
 import com.nhs.scheduler.model.Assignment;
+import com.nhs.scheduler.model.AnnualLeaveEntry;
 import com.nhs.scheduler.model.AvailabilityWindow;
 import com.nhs.scheduler.model.Employee;
 import com.nhs.scheduler.model.Room;
@@ -11,7 +12,9 @@ import com.nhs.scheduler.model.UnscheduledSession;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,6 +43,9 @@ public class ScheduleService {
         if (state.getSchedule() == null) {
             state.setSchedule(existing.getSchedule());
         }
+        if (state.getScheduleWeekStart() == null) {
+            state.setScheduleWeekStart(existing.getScheduleWeekStart());
+        }
         fileStateStore.write(state);
         return state;
     }
@@ -52,6 +58,7 @@ public class ScheduleService {
     public ScheduleResult generateSchedule() {
         ScheduleState state = getState();
         validateState(state);
+        LocalDate weekStart = resolveScheduleWeekStart(state);
 
         List<Session> sortedSessions = new ArrayList<>(state.getSessions());
         sortedSessions.sort(Comparator
@@ -84,7 +91,7 @@ public class ScheduleService {
                 continue;
             }
 
-            Employee selected = chooseEmployee(state.getEmployees(), employeeAssignments, session);
+            Employee selected = chooseEmployee(state.getEmployees(), employeeAssignments, session, weekStart);
             if (selected == null) {
                 result.getUnscheduledSessions().add(new UnscheduledSession(session, "No qualified employee available"));
                 continue;
@@ -109,6 +116,7 @@ public class ScheduleService {
 
         ScheduleState state = getState();
         validateState(state);
+        LocalDate weekStart = resolveScheduleWeekStart(state);
 
         ScheduleResult schedule = state.getSchedule();
         if (schedule == null) {
@@ -133,7 +141,7 @@ public class ScheduleService {
             throw new IllegalArgumentException("Employee " + employeeId + " does not have required skill " + targetSession.getRequiredSkill());
         }
 
-        if (!isAvailable(replacement, targetSession)) {
+        if (!isAvailable(replacement, targetSession, weekStart)) {
             throw new IllegalArgumentException("Employee " + employeeId + " is not available for this session");
         }
 
@@ -165,10 +173,11 @@ public class ScheduleService {
 
     private Employee chooseEmployee(List<Employee> employees,
                                     Map<String, List<Session>> employeeAssignments,
-                                    Session session) {
+                                    Session session,
+                                    LocalDate weekStart) {
         return employees.stream()
                 .filter(employee -> employee.getSkills().stream().anyMatch(s -> s.equalsIgnoreCase(session.getRequiredSkill())))
-                .filter(employee -> isAvailable(employee, session))
+                .filter(employee -> isAvailable(employee, session, weekStart))
                 .filter(employee -> !hasConflict(employeeAssignments.getOrDefault(employee.getId(), List.of()), session))
                 .min(Comparator.comparingInt(employee -> employeeAssignments.getOrDefault(employee.getId(), List.of()).size()))
                 .orElse(null);
@@ -183,11 +192,18 @@ public class ScheduleService {
                 .orElse(null);
     }
 
-    private boolean isAvailable(Employee employee, Session session) {
-        return employee.getAvailability().stream()
+    private boolean isAvailable(Employee employee, Session session, LocalDate weekStart) {
+        LocalDate sessionDate = dateForSession(weekStart, session);
+        boolean inAvailability = employee.getAvailability().stream()
                 .anyMatch(window -> window.getDayOfWeek() == session.getDayOfWeek()
                         && !window.getStart().isAfter(session.getStart())
                         && !window.getEnd().isBefore(session.getEnd()));
+        return inAvailability && !isOnAnnualLeave(employee, sessionDate);
+    }
+
+    private boolean isOnAnnualLeave(Employee employee, LocalDate sessionDate) {
+        return employee.getAnnualLeave().stream()
+                .anyMatch(entry -> !entry.getStartDate().isAfter(sessionDate) && !entry.getEndDate().isBefore(sessionDate));
     }
 
     private boolean hasConflict(List<Session> existingSessions, Session candidate) {
@@ -205,9 +221,16 @@ public class ScheduleService {
             throw new IllegalArgumentException("State is required");
         }
 
+        validateScheduleWeekStart(state.getScheduleWeekStart());
         validateRooms(state.getRooms());
         validateEmployees(state.getEmployees());
         validateSessions(state.getSessions());
+    }
+
+    private void validateScheduleWeekStart(LocalDate scheduleWeekStart) {
+        if (scheduleWeekStart != null && scheduleWeekStart.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
+            throw new IllegalArgumentException("Schedule week start must be a Monday");
+        }
     }
 
     private void validateRooms(List<Room> rooms) {
@@ -242,6 +265,14 @@ public class ScheduleService {
                     throw new IllegalArgumentException("Employee " + employee.getId() + " has invalid availability window");
                 }
             }
+            for (AnnualLeaveEntry leave : employee.getAnnualLeave()) {
+                if (leave.getStartDate() == null || leave.getEndDate() == null) {
+                    throw new IllegalArgumentException("Employee " + employee.getId() + " has incomplete annual leave entry");
+                }
+                if (leave.getEndDate().isBefore(leave.getStartDate())) {
+                    throw new IllegalArgumentException("Employee " + employee.getId() + " has invalid annual leave range");
+                }
+            }
         }
     }
 
@@ -268,5 +299,16 @@ public class ScheduleService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private LocalDate resolveScheduleWeekStart(ScheduleState state) {
+        if (state.getScheduleWeekStart() != null) {
+            return state.getScheduleWeekStart();
+        }
+        return LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+    }
+
+    private LocalDate dateForSession(LocalDate weekStart, Session session) {
+        return weekStart.plusDays(session.getDayOfWeek().getValue() - java.time.DayOfWeek.MONDAY.getValue());
     }
 }

@@ -127,6 +127,11 @@
       box-shadow: var(--md-shadow-2);
     }
     .panel h2 { margin: 0 0 10px; font-size: 1.1rem; font-weight: 600; }
+    .panel-subtitle {
+      margin: -2px 0 12px;
+      color: var(--md-on-surface-muted);
+      font-size: 0.9rem;
+    }
     .calendar-wrap {
       overflow-x: auto;
       border-radius: 12px;
@@ -286,6 +291,7 @@
       <div class="nav">
         <a href="/" class="active">Schedule</a>
         <a href="/config.html">Configure Data</a>
+        <a href="/leave.html">Annual Leave</a>
         <form method="post" action="/logout">
           <button type="submit" class="secondary logout-btn">Log out</button>
         </form>
@@ -302,6 +308,7 @@
 
     <div class="panel">
       <h2>Weekly Calendar</h2>
+      <p id="weekLabel" class="panel-subtitle">Week commencing: loading...</p>
       <div class="calendar-wrap">
         <table id="calendarTable" class="timetable"></table>
       </div>
@@ -334,8 +341,10 @@
   const overrideModalSubtitle = document.getElementById('overrideModalSubtitle');
   const overrideCandidateList = document.getElementById('overrideCandidateList');
   const overrideEmptyState = document.getElementById('overrideEmptyState');
+  const weekLabel = document.getElementById('weekLabel');
   let rooms = [];
   let employees = [];
+  let scheduleWeekStart = null;
   let currentSchedule = { assignments: [], unscheduledSessions: [] };
   let activeOverrideAssignment = null;
 
@@ -350,11 +359,36 @@
     return value < '12:00' ? 'AM' : 'PM';
   }
 
+  function formatDate(value) {
+    if (!value) return 'Not set';
+    return new Date(`${value}T00:00:00`).toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  }
+
+  function sessionDate(session) {
+    if (!scheduleWeekStart) return null;
+    const start = new Date(`${scheduleWeekStart}T00:00:00`);
+    const offset = DAY_ORDER.indexOf(session.dayOfWeek);
+    if (offset < 0) return null;
+    start.setDate(start.getDate() + offset);
+    return start.toISOString().slice(0, 10);
+  }
+
   function isAvailable(employee, session) {
-    return (employee.availability || []).some((window) => (
+    const hasAvailability = (employee.availability || []).some((window) => (
       window.dayOfWeek === session.dayOfWeek
       && window.start <= session.start
       && window.end >= session.end
+    ));
+    if (!hasAvailability) return false;
+    const targetDate = sessionDate(session);
+    if (!targetDate) return true;
+    return !(employee.annualLeave || []).some((entry) => (
+      entry.startDate <= targetDate && entry.endDate >= targetDate
     ));
   }
 
@@ -435,6 +469,7 @@
     currentSchedule = result || { assignments: [], unscheduledSessions: [] };
     calendarTable.innerHTML = '';
     unscheduledOutput.innerHTML = '';
+    weekLabel.textContent = `Week commencing: ${formatDate(scheduleWeekStart)}`;
 
     const assignments = (result && result.assignments) ? result.assignments : [];
     const assignmentMap = new Map();
@@ -542,6 +577,7 @@
     }
     rooms = data.rooms || [];
     employees = data.employees || [];
+    scheduleWeekStart = data.scheduleWeekStart || null;
   }
 
   async function overrideAssignment(sessionId, employeeId) {

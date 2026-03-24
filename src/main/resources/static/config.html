@@ -210,6 +210,7 @@
       <div class="nav">
         <a href="/">Schedule</a>
         <a href="/config.html" class="active">Configure Data</a>
+        <a href="/leave.html">Annual Leave</a>
         <form method="post" action="/logout">
           <button type="submit" class="secondary logout-btn">Log out</button>
         </form>
@@ -287,7 +288,7 @@
   const DEFAULT_PURPOSE_OPTIONS = ['ecg', 'echo', 'stress-test', 'holter', 'cardiac-bloods', 'diagnostic-consult'];
   const DEFAULT_SKILL_OPTIONS = ['ecg', 'echo', 'stress-test', 'holter', 'cardiac-bloods', 'diagnostic-consult'];
 
-  let state = { rooms: [], employees: [], sessions: [], purposeOptions: [], skillOptions: [] };
+  let state = { rooms: [], employees: [], sessions: [], purposeOptions: [], skillOptions: [], scheduleWeekStart: null };
 
   const roomsBody = document.getElementById('roomsBody');
   const employeesBody = document.getElementById('employeesBody');
@@ -478,7 +479,8 @@
         id: tr.querySelector('input[data-field="id"]').value.trim(),
         name: tr.querySelector('input[data-field="name"]').value.trim(),
         skills,
-        availability
+        availability,
+        annualLeave: employee.annualLeave || []
       };
     });
 
@@ -496,6 +498,7 @@
       rooms,
       employees,
       sessions,
+      scheduleWeekStart: state.scheduleWeekStart,
       purposeOptions: unique(state.purposeOptions),
       skillOptions: unique(state.skillOptions)
     };
@@ -515,9 +518,11 @@
         employees: (data.employees || []).map(e => ({
           ...e,
           availability: e.availability || [],
+          annualLeave: e.annualLeave || [],
           _uiid: uid()
         })),
         sessions: (data.sessions || data.jobs || []).map(s => ({ ...s, _uiid: uid() })),
+        scheduleWeekStart: data.scheduleWeekStart || null,
         purposeOptions: unique([
           ...(data.purposeOptions || []),
           ...((data.rooms || []).map(r => r.purpose)),

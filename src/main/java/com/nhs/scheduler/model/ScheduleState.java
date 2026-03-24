@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ScheduleState {
     @JsonProperty("sessions")
     @JsonAlias("jobs")
     private List<Session> sessions = new ArrayList<>();
+    private LocalDate scheduleWeekStart;
     private List<String> purposeOptions = new ArrayList<>();
     private List<String> skillOptions = new ArrayList<>();
     private ScheduleResult schedule;
@@ -44,6 +46,14 @@ public class ScheduleState {
 
     public void setSessions(List<Session> sessions) {
         this.sessions = sessions;
+    }
+
+    public LocalDate getScheduleWeekStart() {
+        return scheduleWeekStart;
+    }
+
+    public void setScheduleWeekStart(LocalDate scheduleWeekStart) {
+        this.scheduleWeekStart = scheduleWeekStart;
     }
 
     public List<String> getPurposeOptions() {

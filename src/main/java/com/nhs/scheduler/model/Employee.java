@@ -20,6 +20,9 @@ public class Employee {
     @Valid
     private List<AvailabilityWindow> availability = new ArrayList<>();
 
+    @Valid
+    private List<AnnualLeaveEntry> annualLeave = new ArrayList<>();
+
     public Employee() {
     }
 
@@ -51,7 +54,7 @@ public class Employee {
     }
 
     public void setSkills(Set<String> skills) {
-        this.skills = skills;
+        this.skills = skills == null ? new HashSet<>() : skills;
     }
 
     public List<AvailabilityWindow> getAvailability() {
@@ -59,6 +62,14 @@ public class Employee {
     }
 
     public void setAvailability(List<AvailabilityWindow> availability) {
-        this.availability = availability;
+        this.availability = availability == null ? new ArrayList<>() : availability;
+    }
+
+    public List<AnnualLeaveEntry> getAnnualLeave() {
+        return annualLeave;
+    }
+
+    public void setAnnualLeave(List<AnnualLeaveEntry> annualLeave) {
+        this.annualLeave = annualLeave == null ? new ArrayList<>() : annualLeave;
     }
 }
