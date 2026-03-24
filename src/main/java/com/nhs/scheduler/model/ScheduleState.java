@@ -6,7 +6,9 @@ import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ScheduleState {
     @Valid
@@ -20,6 +22,7 @@ public class ScheduleState {
     @JsonAlias("jobs")
     private List<Session> sessions = new ArrayList<>();
     private LocalDate scheduleWeekStart;
+    private Map<String, ScheduleResult> schedulesByWeek = new LinkedHashMap<>();
     private List<String> purposeOptions = new ArrayList<>();
     private List<String> skillOptions = new ArrayList<>();
     private ScheduleResult schedule;
@@ -54,6 +57,14 @@ public class ScheduleState {
 
     public void setScheduleWeekStart(LocalDate scheduleWeekStart) {
         this.scheduleWeekStart = scheduleWeekStart;
+    }
+
+    public Map<String, ScheduleResult> getSchedulesByWeek() {
+        return schedulesByWeek;
+    }
+
+    public void setSchedulesByWeek(Map<String, ScheduleResult> schedulesByWeek) {
+        this.schedulesByWeek = schedulesByWeek == null ? new LinkedHashMap<>() : schedulesByWeek;
     }
 
     public List<String> getPurposeOptions() {

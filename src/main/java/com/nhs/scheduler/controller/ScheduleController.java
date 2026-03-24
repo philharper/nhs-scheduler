@@ -3,6 +3,7 @@ package com.nhs.scheduler.controller;
 import com.nhs.scheduler.model.AssignmentOverrideRequest;
 import com.nhs.scheduler.model.ScheduleResult;
 import com.nhs.scheduler.model.ScheduleState;
+import com.nhs.scheduler.model.ScheduleWeekSelectionRequest;
 import com.nhs.scheduler.service.ScheduleService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,11 @@ public class ScheduleController {
     @PostMapping("/schedule")
     public ScheduleResult generateSchedule() {
         return scheduleService.generateSchedule();
+    }
+
+    @PutMapping("/schedule/week")
+    public ScheduleState updateScheduleWeek(@Valid @RequestBody ScheduleWeekSelectionRequest request) {
+        return scheduleService.updateScheduleWeek(request.getScheduleWeekStart());
     }
 
     @PutMapping("/schedule/override")

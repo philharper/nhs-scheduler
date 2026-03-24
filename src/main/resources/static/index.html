@@ -90,6 +90,27 @@
       font-size: 0.92rem;
     }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
+    .week-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+    .week-controls label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .week-controls input {
+      border: 1px solid var(--md-outline);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      background: var(--md-surface);
+      color: var(--md-on-surface);
+    }
     button {
       border: 0;
       border-radius: 999px;
@@ -304,6 +325,13 @@
       <button id="generateBtn">Generate Weekly Schedule</button>
       <button id="reloadBtn" class="secondary">Reload From Saved Data</button>
     </div>
+    <div class="week-controls">
+      <label>
+        Schedule Week (Monday)
+        <input id="weekPicker" type="date" />
+      </label>
+      <button id="selectWeekBtn" class="secondary" type="button">Load Selected Week</button>
+    </div>
 
     <div id="message" class="message"><pre id="messageText"></pre></div>
 
@@ -343,6 +371,7 @@
   const overrideCandidateList = document.getElementById('overrideCandidateList');
   const overrideEmptyState = document.getElementById('overrideEmptyState');
   const weekLabel = document.getElementById('weekLabel');
+  const weekPicker = document.getElementById('weekPicker');
   let rooms = [];
   let employees = [];
   let scheduleWeekStart = null;
@@ -368,6 +397,14 @@
       month: 'short',
       year: 'numeric'
     });
+  }
+
+  function mondayForDate(value) {
+    const date = new Date(`${value}T00:00:00`);
+    const day = date.getDay();
+    const offset = day === 0 ? -6 : 1 - day;
+    date.setDate(date.getDate() + offset);
+    return date.toISOString().slice(0, 10);
   }
 
   function sessionDate(session) {
@@ -579,6 +616,40 @@
     rooms = data.rooms || [];
     employees = data.employees || [];
     scheduleWeekStart = data.scheduleWeekStart || null;
+    weekPicker.value = scheduleWeekStart || '';
+  }
+
+  async function selectWeek() {
+    const selectedWeek = weekPicker.value;
+    if (!selectedWeek) {
+      showMessage('Select a Monday for the schedule week.', false);
+      return;
+    }
+    const monday = mondayForDate(selectedWeek);
+    if (monday !== selectedWeek) {
+      showMessage('Schedule week must be a Monday.', false);
+      weekPicker.value = monday;
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/schedule/week', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheduleWeekStart: selectedWeek })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showMessage(data.error || 'Failed to select schedule week', false);
+        return;
+      }
+      scheduleWeekStart = data.scheduleWeekStart || selectedWeek;
+      weekPicker.value = scheduleWeekStart;
+      await loadSchedule();
+      showMessage(`Loaded schedule for week commencing ${formatDate(scheduleWeekStart)}.`, true);
+    } catch (e) {
+      showMessage(e.message, false);
+    }
   }
 
   async function overrideAssignment(sessionId, employeeId) {
@@ -635,6 +706,7 @@
 
   document.getElementById('generateBtn').addEventListener('click', generateSchedule);
   document.getElementById('reloadBtn').addEventListener('click', loadSchedule);
+  document.getElementById('selectWeekBtn').addEventListener('click', selectWeek);
   document.getElementById('overrideCancelBtn').addEventListener('click', closeOverrideModal);
   document.getElementById('overrideApplyBtn').addEventListener('click', async () => {
     if (!activeOverrideAssignment) return;

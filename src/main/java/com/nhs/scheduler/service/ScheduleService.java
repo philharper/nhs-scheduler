@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,31 +35,46 @@ public class ScheduleService {
     }
 
     public ScheduleState getState() {
-        return fileStateStore.read();
+        return normalizeState(fileStateStore.read());
     }
 
     public ScheduleState replaceState(ScheduleState state) {
         validateState(state);
-        ScheduleState existing = getState();
-        if (state.getSchedule() == null) {
-            state.setSchedule(existing.getSchedule());
-        }
+        ScheduleState existing = normalizeState(fileStateStore.read());
         if (state.getScheduleWeekStart() == null) {
             state.setScheduleWeekStart(existing.getScheduleWeekStart());
         }
-        fileStateStore.write(state);
-        return state;
+        if ((state.getSchedulesByWeek() == null || state.getSchedulesByWeek().isEmpty()) && !existing.getSchedulesByWeek().isEmpty()) {
+            state.setSchedulesByWeek(existing.getSchedulesByWeek());
+        }
+        ScheduleState normalized = normalizeState(state);
+        fileStateStore.write(normalized);
+        return normalized;
     }
 
     public ScheduleResult getSchedule() {
         ScheduleState state = getState();
-        return state.getSchedule() == null ? new ScheduleResult() : state.getSchedule();
+        return currentSchedule(state);
+    }
+
+    public ScheduleState updateScheduleWeek(LocalDate scheduleWeekStart) {
+        if (scheduleWeekStart == null) {
+            throw new IllegalArgumentException("scheduleWeekStart is required");
+        }
+        validateScheduleWeekStart(scheduleWeekStart);
+
+        ScheduleState state = getState();
+        state.setScheduleWeekStart(scheduleWeekStart);
+        ScheduleState normalized = normalizeState(state);
+        fileStateStore.write(normalized);
+        return normalized;
     }
 
     public ScheduleResult generateSchedule() {
         ScheduleState state = getState();
         validateState(state);
         LocalDate weekStart = resolveScheduleWeekStart(state);
+        String weekKey = weekKey(weekStart);
 
         List<Session> sortedSessions = new ArrayList<>(state.getSessions());
         sortedSessions.sort(Comparator
@@ -103,6 +119,8 @@ public class ScheduleService {
             result.getAssignments().add(new Assignment(session, selected, selectedRoom));
         }
 
+        state.setScheduleWeekStart(weekStart);
+        state.getSchedulesByWeek().put(weekKey, result);
         state.setSchedule(result);
         fileStateStore.write(state);
 
@@ -117,8 +135,12 @@ public class ScheduleService {
         ScheduleState state = getState();
         validateState(state);
         LocalDate weekStart = resolveScheduleWeekStart(state);
+        String weekKey = weekKey(weekStart);
 
-        ScheduleResult schedule = state.getSchedule();
+        ScheduleResult schedule = state.getSchedulesByWeek().get(weekKey);
+        if (schedule == null) {
+            schedule = state.getSchedule();
+        }
         if (schedule == null) {
             throw new IllegalArgumentException("No saved schedule exists to override");
         }
@@ -162,6 +184,7 @@ public class ScheduleService {
         }
 
         target.setEmployee(replacement);
+        state.getSchedulesByWeek().put(weekKey, schedule);
         state.setSchedule(schedule);
         fileStateStore.write(state);
         return schedule;
@@ -310,5 +333,31 @@ public class ScheduleService {
 
     private LocalDate dateForSession(LocalDate weekStart, Session session) {
         return weekStart.plusDays(session.getDayOfWeek().getValue() - java.time.DayOfWeek.MONDAY.getValue());
+    }
+
+    private ScheduleState normalizeState(ScheduleState state) {
+        if (state.getSchedulesByWeek() == null) {
+            state.setSchedulesByWeek(new LinkedHashMap<>());
+        }
+        LocalDate weekStart = resolveScheduleWeekStart(state);
+        state.setScheduleWeekStart(weekStart);
+        if (state.getSchedule() != null && state.getSchedulesByWeek().isEmpty()) {
+            state.getSchedulesByWeek().put(weekKey(weekStart), state.getSchedule());
+        }
+        return state;
+    }
+
+    private ScheduleResult currentSchedule(ScheduleState state) {
+        LocalDate weekStart = resolveScheduleWeekStart(state);
+        ScheduleResult result = state.getSchedulesByWeek().get(weekKey(weekStart));
+        if (result != null) {
+            state.setSchedule(result);
+            return result;
+        }
+        return new ScheduleResult();
+    }
+
+    private String weekKey(LocalDate weekStart) {
+        return weekStart.toString();
     }
 }

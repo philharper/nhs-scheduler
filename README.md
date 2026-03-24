@@ -10,6 +10,7 @@ A scheduling app for NHS cardiology diagnostic departments.
 - Generates a schedule that assigns each session to an appropriate room and available, qualified employee.
 - Marks sessions as unscheduled when constraints cannot be met.
 - Persists all state to a shareable JSON file: `data/schedule-state.json`.
+- Persists schedule results separately by selected week, with the current week defaulting to the current Monday.
 
 ## Tech
 - Java 21
@@ -45,6 +46,7 @@ A scheduling app for NHS cardiology diagnostic departments.
 - `availability[]`: `{ dayOfWeek, start, end }`
 - `sessions[]`: `{ id, name, requiredSkill, purpose, dayOfWeek, start, end }`
 - `scheduleWeekStart`: Monday date used to map the weekly template to actual calendar dates
+- `schedulesByWeek`: persisted generated schedules keyed by week-start date
 - `purposeOptions[]`: configurable purpose values used by room purpose checkboxes
 - `skillOptions[]`: configurable skill values used by employee skill checkboxes
 
@@ -78,6 +80,7 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 ## Notes
 - All room, employee, and session fields are editable via the configuration page UI.
 - Annual leave is managed on the dedicated leave page and blocks scheduling for the matching calendar dates.
+- The schedule page lets you switch the active Monday week and load or generate that week's persisted schedule.
 - Room usage is exclusive by time window.
 - Employee sessions cannot overlap.
 - Room is chosen automatically based on session purpose and room availability.
