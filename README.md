@@ -25,7 +25,13 @@ A scheduling app for NHS cardiology diagnostic departments.
    ```bash
    mvn spring-boot:run
    ```
-3. Open:
+3. Log in with the configured credentials.
+   - Local defaults are `admin` / `change-me`
+   - Override them with env vars:
+     - `SCHEDULER_AUTH_USERNAME`
+     - `SCHEDULER_AUTH_PASSWORD`
+4. Open:
+   - Login page: `http://localhost:8080/login.html`
    - Schedule page: `http://localhost:8080/`
    - Data configuration page: `http://localhost:8080/config.html`
    - State API: `http://localhost:8080/api/state`
@@ -48,6 +54,22 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 - `POST /api/schedule` generate assignments from current state and persist as the new saved schedule
 - `PUT /api/schedule/override` manually override assigned employee for a scheduled session and persist it
 - `GET /api/meta` returns the absolute data-file path
+
+## Authentication
+- All pages and API routes require login.
+- Credentials are configured with:
+  - `scheduler.auth.username`
+  - `scheduler.auth.password`
+- These resolve from environment variables:
+  - `SCHEDULER_AUTH_USERNAME`
+  - `SCHEDULER_AUTH_PASSWORD`
+- Default login page: `/login.html`
+
+## GitHub Secrets
+- Store login credentials as repository secrets named:
+  - `SCHEDULER_AUTH_USERNAME`
+  - `SCHEDULER_AUTH_PASSWORD`
+- At deploy/runtime, expose those secrets as environment variables so Spring Boot can read them.
 
 ## Notes
 - All room, employee, and session fields are editable via the configuration page UI.

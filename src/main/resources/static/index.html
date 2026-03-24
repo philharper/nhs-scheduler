@@ -61,6 +61,8 @@
       display: flex;
       gap: 8px;
       margin: 0;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .nav a {
       text-decoration: none;
@@ -78,6 +80,13 @@
       background: var(--md-primary);
       color: var(--md-on-primary);
       box-shadow: var(--md-shadow-1);
+    }
+    .nav form {
+      margin-left: auto;
+    }
+    .logout-btn {
+      padding: 7px 14px;
+      font-size: 0.92rem;
     }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
     button {
@@ -277,6 +286,9 @@
       <div class="nav">
         <a href="/" class="active">Schedule</a>
         <a href="/config.html">Configure Data</a>
+        <form method="post" action="/logout">
+          <button type="submit" class="secondary logout-btn">Log out</button>
+        </form>
       </div>
     </div>
   </div>
