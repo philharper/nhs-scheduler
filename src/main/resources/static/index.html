@@ -491,7 +491,7 @@
         name.textContent = employee.name;
         const meta = document.createElement('div');
         meta.className = 'candidate-meta';
-        meta.textContent = `${employee.id} • skills: ${(employee.skills || []).join(', ')}`;
+        meta.textContent = `skills: ${(employee.skills || []).join(', ')}`;
         detail.appendChild(name);
         detail.appendChild(meta);
         wrapper.appendChild(radio);
@@ -600,7 +600,7 @@
     } else {
       unscheduled.forEach((item) => {
         const li = document.createElement('li');
-        li.textContent = `${item.session.id} (${item.session.name}): ${item.reason}`;
+        li.textContent = `${item.session.name}: ${item.reason}`;
         unscheduledOutput.appendChild(li);
       });
     }

@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class ScheduleService {
@@ -39,7 +40,6 @@ public class ScheduleService {
     }
 
     public ScheduleState replaceState(ScheduleState state) {
-        validateState(state);
         ScheduleState existing = normalizeState(scheduleStateStore.read());
         if (state.getScheduleWeekStart() == null) {
             state.setScheduleWeekStart(existing.getScheduleWeekStart());
@@ -48,6 +48,7 @@ public class ScheduleService {
             state.setSchedulesByWeek(existing.getSchedulesByWeek());
         }
         ScheduleState normalized = normalizeState(state);
+        validateState(normalized);
         scheduleStateStore.write(normalized);
         return normalized;
     }
@@ -259,8 +260,8 @@ public class ScheduleService {
     private void validateRooms(List<Room> rooms) {
         Set<String> ids = new HashSet<>();
         for (Room room : rooms) {
-            if (isBlank(room.getId()) || isBlank(room.getName()) || isBlank(room.getPurpose())) {
-                throw new IllegalArgumentException("Each room must have id, name, and purpose");
+            if (isBlank(room.getName()) || isBlank(room.getPurpose())) {
+                throw new IllegalArgumentException("Each room must have name and purpose");
             }
             if (!ids.add(room.getId())) {
                 throw new IllegalArgumentException("Duplicate room id: " + room.getId());
@@ -271,8 +272,8 @@ public class ScheduleService {
     private void validateEmployees(List<Employee> employees) {
         Set<String> ids = new HashSet<>();
         for (Employee employee : employees) {
-            if (isBlank(employee.getId()) || isBlank(employee.getName())) {
-                throw new IllegalArgumentException("Each employee must have id and name");
+            if (isBlank(employee.getName())) {
+                throw new IllegalArgumentException("Each employee must have a name");
             }
             if (!ids.add(employee.getId())) {
                 throw new IllegalArgumentException("Duplicate employee id: " + employee.getId());
@@ -302,10 +303,10 @@ public class ScheduleService {
     private void validateSessions(List<Session> sessions) {
         Set<String> ids = new HashSet<>();
         for (Session session : sessions) {
-            if (isBlank(session.getId()) || isBlank(session.getName())
+            if (isBlank(session.getName())
                     || isBlank(session.getRequiredSkill()) || isBlank(session.getPurpose()) || session.getDayOfWeek() == null
                     || session.getStart() == null || session.getEnd() == null) {
-                throw new IllegalArgumentException("Each session must have id, name, requiredSkill, purpose, dayOfWeek, start, and end");
+                throw new IllegalArgumentException("Each session must have name, requiredSkill, purpose, dayOfWeek, start, and end");
             }
             if (!ids.add(session.getId())) {
                 throw new IllegalArgumentException("Duplicate session id: " + session.getId());
@@ -339,6 +340,7 @@ public class ScheduleService {
         if (state.getSchedulesByWeek() == null) {
             state.setSchedulesByWeek(new LinkedHashMap<>());
         }
+        assignMissingIds(state);
         LocalDate weekStart = resolveScheduleWeekStart(state);
         state.setScheduleWeekStart(weekStart);
         if (state.getSchedule() != null && state.getSchedulesByWeek().isEmpty()) {
@@ -359,5 +361,27 @@ public class ScheduleService {
 
     private String weekKey(LocalDate weekStart) {
         return weekStart.toString();
+    }
+
+    private void assignMissingIds(ScheduleState state) {
+        for (Room room : state.getRooms()) {
+            if (isBlank(room.getId())) {
+                room.setId(generateId("room"));
+            }
+        }
+        for (Employee employee : state.getEmployees()) {
+            if (isBlank(employee.getId())) {
+                employee.setId(generateId("employee"));
+            }
+        }
+        for (Session session : state.getSessions()) {
+            if (isBlank(session.getId())) {
+                session.setId(generateId("session"));
+            }
+        }
+    }
+
+    private String generateId(String prefix) {
+        return prefix + "-" + UUID.randomUUID().toString().substring(0, 8);
     }
 }

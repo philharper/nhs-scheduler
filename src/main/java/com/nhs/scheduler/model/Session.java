@@ -7,7 +7,6 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 public class Session {
-    @NotBlank
     private String id;
 
     @NotBlank

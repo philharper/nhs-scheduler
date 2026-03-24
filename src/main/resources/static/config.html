@@ -287,7 +287,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-          <tr><th>ID</th><th>Name</th><th>Purpose (single choice)</th><th>Action</th></tr>
+          <tr><th>Name</th><th>Purpose (single choice)</th><th>Action</th></tr>
           </thead>
           <tbody id="roomsBody"></tbody>
         </table>
@@ -301,7 +301,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-          <tr><th>ID</th><th>Name</th><th>Skills (checkboxes)</th><th>Availability</th><th>Action</th></tr>
+          <tr><th>Name</th><th>Skills (checkboxes)</th><th>Availability</th><th>Action</th></tr>
           </thead>
           <tbody id="employeesBody"></tbody>
         </table>
@@ -317,7 +317,7 @@
         <table>
           <thead>
           <tr>
-            <th>ID</th><th>Name</th><th>Required Skill</th><th>Purpose</th><th>Day</th><th>Start</th><th>End</th><th>Action</th>
+            <th>Name</th><th>Required Skill</th><th>Purpose</th><th>Day</th><th>Start</th><th>End</th><th>Action</th>
           </tr>
           </thead>
           <tbody id="sessionsBody"></tbody>
@@ -430,7 +430,6 @@
       tr.dataset.id = room._uiid;
 
       tr.innerHTML = `
-        <td><input data-field="id" value="${room.id || ''}" /></td>
         <td><input data-field="name" value="${room.name || ''}" /></td>
         <td>${purposeCheckboxes(room)}</td>
         <td><button class="danger" data-action="remove-room" type="button">Remove</button></td>
@@ -457,7 +456,6 @@
       `).join('');
 
       tr.innerHTML = `
-        <td><input data-field="id" value="${employee.id || ''}" /></td>
         <td><input data-field="name" value="${employee.name || ''}" /></td>
         <td>${skillCheckboxes(employee)}</td>
         <td>
@@ -477,7 +475,6 @@
       tr.dataset.id = session._uiid;
 
       tr.innerHTML = `
-        <td><input data-field="id" value="${session.id || ''}" /></td>
         <td><input data-field="name" value="${session.name || ''}" /></td>
         <td>
           <select data-field="requiredSkill">
@@ -512,7 +509,6 @@
     const employee = state.employees.find((item) => item._uiid === tr.dataset.id);
     if (!employee) return null;
 
-    employee.id = tr.querySelector('input[data-field="id"]').value.trim();
     employee.name = tr.querySelector('input[data-field="name"]').value.trim();
     employee.skills = Array.from(tr.querySelectorAll('input[data-field="employee-skill"]:checked')).map((item) => item.value);
     employee.availability = Array.from(tr.querySelectorAll('.availability-row')).map((row) => ({
@@ -527,7 +523,7 @@
   function parseStateFromDom() {
     const rooms = Array.from(roomsBody.querySelectorAll('tr')).map((tr) => ({
       purpose: (tr.querySelector('input[data-field="room-purpose"]:checked') || {}).value || '',
-      id: tr.querySelector('input[data-field="id"]').value.trim(),
+      id: state.rooms.find((room) => room._uiid === tr.dataset.id)?.id || '',
       name: tr.querySelector('input[data-field="name"]').value.trim(),
     }));
 
@@ -541,7 +537,7 @@
       const skills = Array.from(tr.querySelectorAll('input[data-field="employee-skill"]:checked')).map((item) => item.value);
 
       return {
-        id: tr.querySelector('input[data-field="id"]').value.trim(),
+        id: originalEmployee?.id || '',
         name: tr.querySelector('input[data-field="name"]').value.trim(),
         skills,
         availability,
@@ -550,7 +546,7 @@
     });
 
     const sessions = Array.from(sessionsBody.querySelectorAll('tr')).map((tr) => ({
-      id: tr.querySelector('input[data-field="id"]').value.trim(),
+      id: state.sessions.find((session) => session._uiid === tr.dataset.id)?.id || '',
       name: tr.querySelector('input[data-field="name"]').value.trim(),
       requiredSkill: (tr.querySelector('select[data-field="requiredSkill"]')?.value || '').trim(),
       purpose: (tr.querySelector('select[data-field="purpose"]')?.value || '').trim(),

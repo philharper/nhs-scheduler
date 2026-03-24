@@ -42,11 +42,11 @@ A scheduling app for NHS cardiology diagnostic departments.
    - State API: `http://localhost:8080/api/state`
 
 ## JSON model
-- `rooms[]`: `{ id, name, purpose }`
-- `employees[]`: `{ id, name, skills[], availability[] }`
+- `rooms[]`: `{ id, name, purpose }` with `id` auto-generated if omitted
+- `employees[]`: `{ id, name, skills[], availability[] }` with `id` auto-generated if omitted
 - `employees[].annualLeave[]`: `{ startDate, endDate }`
 - `availability[]`: `{ dayOfWeek, start, end }`
-- `sessions[]`: `{ id, name, requiredSkill, purpose, dayOfWeek, start, end }`
+- `sessions[]`: `{ id, name, requiredSkill, purpose, dayOfWeek, start, end }` with `id` auto-generated if omitted
 - `scheduleWeekStart`: Monday date used to map the weekly template to actual calendar dates
 - `schedulesByWeek`: persisted generated schedules keyed by week-start date
 - `purposeOptions[]`: configurable purpose values used by room purpose checkboxes
@@ -81,6 +81,7 @@ Times use `HH:mm:ss` (for example `08:00:00`).
 
 ## Notes
 - All room, employee, and session fields are editable via the configuration page UI.
+- The UI no longer requires manual IDs for rooms, employees, or sessions; those are generated internally on save.
 - Annual leave is managed on the dedicated leave page and blocks scheduling for the matching calendar dates.
 - The schedule page lets you switch the active Monday week and load or generate that week's persisted schedule.
 - Room usage is exclusive by time window.

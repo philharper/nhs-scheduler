@@ -1,15 +1,12 @@
 package com.nhs.scheduler.model;
 
-import jakarta.validation.constraints.NotBlank;
-
 public class Room {
-    @NotBlank
     private String id;
 
-    @NotBlank
+    @jakarta.validation.constraints.NotBlank
     private String name;
 
-    @NotBlank
+    @jakarta.validation.constraints.NotBlank
     private String purpose;
 
     public Room() {

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 public class Employee {
-    @NotBlank
     private String id;
 
     @NotBlank
